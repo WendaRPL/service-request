@@ -1,1 +1,89 @@
+/* =========================
+   CSS VARIABLES
+========================= */
+:root {
+    --first: #6482AD;
+    --second: #7FA1C3;
+    --third: #E2DAD6;
+    --fourth: #F5EDED;
+    --white: #FFFFFF;
+    --dark-gray: #4A5C7A;
+    --medium-gray: #8A99B3;
+    --light-gray: #D1D9E6;
+    --success: #7AAD64;
+    --error: #AD647F;
+    --shadow-light: rgba(100, 130, 173, 0.15);
+    --shadow-medium: rgba(74, 92, 122, 0.25);
+    --shadow-soft: rgba(100, 130, 173, 0.12);
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* =========================
+   FONT
+========================= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* =========================
+   RESET
+========================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: var(--fourth);
+    color: var(--dark-gray);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================
+   MAIN LAYOUT
+========================= */
+.content {
+    color: var(--dark-gray);
+    flex: 1;
+    padding: 20px 0;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* =========================
+   GLOBAL ANIMATIONS
+========================= */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes wave {
+    from { background-position: 0% 0; }
+    to   { background-position: 200% 0; }
+}
+
+@keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--third);
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--first), var(--second));
+}
 

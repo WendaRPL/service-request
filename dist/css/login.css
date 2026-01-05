@@ -1,0 +1,653 @@
+/* CSS Variables - Fresh but keeping original color palette */
+:root {
+    --first: #6482AD;     /* Blue-gray primary */
+    --second: #7FA1C3;    /* Light blue */
+    --third: #E2DAD6;     /* Warm light gray */
+    --fourth: #F5EDED;    /* Off-white pinkish */
+    --white: #FFFFFF;
+    --dark-gray: #4A5C7A;  /* Dark blue-gray */
+    --medium-gray: #8A99B3; /* Medium blue-gray */
+    --light-gray: #D1D9E6;  /* Light blue-gray */
+    --success: #7AAD64;    /* Green */
+    --error: #AD647F;      /* Pink-red */
+    --shadow-light: rgba(100, 130, 173, 0.15);
+    --shadow-medium: rgba(74, 92, 122, 0.25);
+    --shadow-soft: rgba(100, 130, 173, 0.12);
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Reset dan Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body.login-page {
+    background: linear-gradient(135deg, 
+        rgba(100, 130, 173, 0.95) 0%, 
+        rgba(127, 161, 195, 0.95) 100%),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="%23FFFFFF" fill-opacity="0.05" d="M0,0 L100,0 L100,100 Q50,80 0,100 Z"/></svg>');
+    background-size: cover;
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Animated background elements */
+body.login-page::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(127, 161, 195, 0.2) 0%, rgba(100, 130, 173, 0) 70%);
+    top: -150px;
+    right: -150px;
+    animation: float 20s ease-in-out infinite;
+}
+
+body.login-page::after {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(226, 218, 214, 0.15) 0%, rgba(226, 218, 214, 0) 70%);
+    bottom: -100px;
+    left: -100px;
+    animation: float 15s ease-in-out infinite reverse;
+}
+
+/* Login Container */
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    animation: fadeInUp 0.8s ease-out;
+    position: relative;
+    z-index: 10;
+}
+
+/* Header Section */
+.header-section {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+}
+
+.title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+.title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--white), transparent);
+    border-radius: 3px;
+}
+
+.subtitle {
+    color: var(--white);
+    opacity: 0.9;
+    font-weight: 400;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    margin-top: 0.5rem;
+}
+
+/* Login Card */
+.login-card {
+    background: var(--fourth);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(74, 92, 122, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+    animation: fadeInUp 1s ease-out 0.2s both;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+/* Enhanced Wave Decoration */
+.wave-decoration {
+    height: 8px;
+    background: linear-gradient(90deg, 
+        var(--first) 0%, 
+        var(--second) 20%, 
+        #8AA9D6 40%,
+        var(--second) 60%,
+        var(--first) 80%,
+        var(--second) 100%);
+    background-size: 200% 100%;
+    animation: wave 8s linear infinite, colorShift 10s ease-in-out infinite alternate;
+    position: relative;
+    overflow: hidden;
+}
+
+.wave-decoration::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent 100%);
+    animation: shine 4s ease-in-out infinite;
+}
+
+.card-content {
+    padding: 2.5rem 2rem;
+}
+
+/* Welcome Text */
+.welcome-text {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--dark-gray);
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 1.2rem;
+}
+
+.welcome-text::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--first), var(--second));
+    border-radius: 2px;
+    box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+/* Form Styles */
+.login-form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    color: var(--dark-gray);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: 0.3px;
+}
+
+.form-label::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--second);
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Input Container */
+.input-container {
+    position: relative;
+    transition: var(--transition-smooth);
+}
+
+.input-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+    transition: var(--transition-smooth);
+}
+
+.icon-gray {
+    color: var(--medium-gray);
+    width: 1.125rem;
+    height: 1.125rem;
+    transition: var(--transition-smooth);
+}
+
+/* Form Input */
+.form-input {
+    width: 100%;
+    padding: 1rem 3.25rem 1rem 3rem;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--third);
+    background-color: var(--white);
+    color: var(--dark-gray);
+    transition: var(--transition-smooth);
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    box-shadow: 0 4px 12px var(--shadow-soft);
+}
+
+.form-input::placeholder {
+    color: var(--medium-gray);
+    font-weight: 400;
+    opacity: 0.7;
+}
+
+.form-input:hover {
+    border-color: var(--second);
+    box-shadow: 0 6px 20px rgba(127, 161, 195, 0.2);
+    transform: translateY(-2px);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--first);
+    box-shadow: 0 0 0 4px var(--shadow-light),
+                0 8px 24px rgba(127, 161, 195, 0.25);
+    background-color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* Toggle Password Button */
+.toggle-password-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    padding: 0;
+    z-index: 1;
+    color: var(--medium-gray);
+}
+
+.toggle-password-btn:hover {
+    background-color: rgba(127, 161, 195, 0.1);
+    color: var(--first);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.toggle-password-btn:hover .icon-gray {
+    transform: scale(1.2);
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--first) 0%, var(--second) 100%);
+    color: var(--white);
+    padding: 1.125rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: var(--transition-smooth);
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    margin-top: 1rem;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 8px 20px rgba(100, 130, 173, 0.3);
+}
+
+.submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent);
+    transition: left 0.7s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(100, 130, 173, 0.4);
+    background: linear-gradient(135deg, var(--second) 0%, var(--first) 100%);
+}
+
+.submit-btn:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.submit-btn:active:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(100, 130, 173, 0.3);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Button States */
+.btn-success {
+    background: linear-gradient(135deg, var(--success) 0%, #8BC67A 100%) !important;
+    box-shadow: 0 8px 20px rgba(122, 173, 100, 0.3) !important;
+}
+
+.btn-error {
+    background: linear-gradient(135deg, var(--error) 0%, #E6B8B8 100%) !important;
+    box-shadow: 0 8px 20px rgba(173, 100, 127, 0.3) !important;
+}
+
+/* Spinner Container */
+.spinner-container {
+    margin-left: 0.75rem;
+}
+
+.loading-spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--white);
+    animation: spin 1s linear infinite;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Card Footer */
+.card-footer {
+    margin-top: 2rem;
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(226, 218, 214, 0.5);
+}
+
+.footer-text {
+    color: var(--medium-gray);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Form Validation Styles */
+.input-error {
+    border-color: var(--error) !important;
+    background-color: rgba(173, 100, 127, 0.03) !important;
+    box-shadow: 0 0 0 4px rgba(173, 100, 127, 0.1) !important;
+    animation: shake 0.5s ease-in-out;
+}
+
+.input-success {
+    border-color: var(--success) !important;
+    background-color: rgba(122, 173, 100, 0.03) !important;
+    box-shadow: 0 0 0 4px rgba(122, 173, 100, 0.1) !important;
+}
+
+/* Focus Effects */
+.input-container:focus-within .input-icon .icon-gray {
+    color: var(--first);
+    transform: scale(1.1);
+}
+
+/* New Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes wave {
+    0% {
+        background-position: 0% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes colorShift {
+    0%, 100% {
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        filter: hue-rotate(10deg);
+    }
+}
+
+@keyframes shine {
+    0%, 100% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    33% {
+        transform: translateY(-20px) rotate(120deg);
+    }
+    66% {
+        transform: translateY(20px) rotate(240deg);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .login-container {
+        padding: 0 1rem;
+    }
+    
+    .card-content {
+        padding: 2rem 1.5rem;
+    }
+    
+    .title {
+        font-size: 1.875rem;
+    }
+    
+    .welcome-text {
+        font-size: 1.5rem;
+        margin-bottom: 1.75rem;
+    }
+    
+    .submit-btn {
+        padding: 1rem 1.25rem;
+        font-size: 0.95rem;
+    }
+    
+    .form-input {
+        padding: 0.875rem 3rem 0.875rem 2.75rem;
+    }
+    
+    .wave-decoration {
+        height: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-content {
+        padding: 1.75rem 1.25rem;
+    }
+    
+    .title {
+        font-size: 1.625rem;
+    }
+    
+    .welcome-text {
+        font-size: 1.375rem;
+    }
+    
+    .form-label {
+        font-size: 0.85rem;
+    }
+    
+    .login-form-content {
+        gap: 1.5rem;
+    }
+    
+    .wave-decoration {
+        height: 5px;
+    }
+}
+
+/* Accessibility */
+.form-input:focus-visible,
+.submit-btn:focus-visible,
+.toggle-password-btn:focus-visible {
+    outline: 2px solid var(--first);
+    outline-offset: 3px;
+}
+
+/* Auto-fill Styles */
+.form-input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px var(--white) inset !important;
+    -webkit-text-fill-color: var(--dark-gray) !important;
+    border-color: var(--first) !important;
+}
+
+/* Floating label effect */
+.floating-label {
+    position: relative;
+}
+
+.floating-label .form-label {
+    position: absolute;
+    top: 50%;
+    left: 3rem;
+    transform: translateY(-50%);
+    transition: var(--transition-smooth);
+    pointer-events: none;
+    background: var(--white);
+    padding: 0 0.5rem;
+    border-radius: 4px;
+}
+
+.floating-label input:focus + .form-label,
+.floating-label input:not(:placeholder-shown) + .form-label {
+    top: 0;
+    font-size: 0.75rem;
+    color: var(--first);
+    background: var(--white);
+}
+
+/* Success animation */
+.success-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(122, 173, 100, 0.95), rgba(139, 198, 122, 0.95));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition-smooth);
+    border-radius: var(--radius-lg);
+    z-index: 20;
+}
+
+.success-animation.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.success-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.success-icon i {
+    color: var(--success);
+    width: 28px;
+    height: 28px;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
