@@ -1,0 +1,432 @@
+/* =========================
+   USER MANAGEMENT ACCORDION
+========================= */
+.user-management-section {
+    margin-top: 20px;
+}
+
+/* Add User Button */
+.action-button.add-user {
+    margin: 10px 20px;
+    padding: 10px 16px;
+    background: var(--first);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: 0 4px 10px var(--shadow-light);
+}
+
+.action-button.add-user:hover {
+    background: var(--second);
+}
+
+/* Accordion Container */
+.accordion-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 20px;
+}
+
+/* Accordion Item */
+.accordion-item {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 6px 16px var(--shadow-soft);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.accordion-item:hover {
+    box-shadow: 0 10px 22px var(--shadow-medium);
+}
+
+/* Header */
+.accordion-header {
+    width: 100%;
+    background: linear-gradient(135deg, var(--white) 0%, var(--fourth) 100%);
+    border: 2px solid rgba(100, 130, 173, 0.15);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--dark-gray);
+    transition: var(--transition);
+    box-shadow: 0 2px 8px var(--shadow-soft);
+    position: relative;
+    overflow: hidden;
+}
+.accordion-header:hover {
+    border-color: var(--first);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--shadow-light);
+    background: linear-gradient(135deg, var(--shadow-light) 0%, var(--first) 100%);
+}
+.accordion-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--first), var(--shadow-soft));
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    transition: var(--transition);
+}
+.accordion-header:hover::before {
+    width: 6px;
+}
+.accordion-header.active {
+    border-color: var(--first);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--shadow-light);
+}
+.accordion-header .accordion-icon {
+    color: var(--first);
+    font-size: 1.2rem;
+    transition: var(--transition);
+    transform: rotate(0deg);
+}
+.accordion-header.active .accordion-icon {
+    transform: rotate(180deg);
+    color: var(--second);
+}
+.user-title {
+    font-size: 0.95rem;
+}
+
+/* Icon */
+.accordion-header .icon {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+/* Active State */
+.accordion-item.active .accordion-header {
+    background: linear-gradient(135deg, var(--shadow-light) 0%, var(--first) 100%);
+}
+
+.accordion-item.active .accordion-header .icon {
+    transform: rotate(180deg);
+}
+
+/* Content */
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+}
+
+.accordion-item.active .accordion-content {
+    max-height: 400px;
+}
+
+/* Body */
+.accordion-body {
+    padding: 0 18px;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: 
+        opacity 0.2s ease 0.2s,
+        transform 0.2s ease 0.2s,
+        padding 0.3s ease;
+}
+
+.accordion-item.active .accordion-body {
+    padding: 20px 18px 18px;
+    opacity: 1;
+    transform: translateY(0);
+    animation: fadeInUp 0.2s cubic-bezier(0.14, 0.89, 0.32, 1.28) 0.1s both;
+}
+.accordion-body p {
+    font-size: 0.90rem;
+    margin-bottom: 5px;
+}
+
+.accordion-body strong {
+    color: var(--first);
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.action-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+/* Edit */
+.edit-btn {
+    background: rgba(100,130,173,0.15);
+    color: var(--first);
+}
+
+.edit-btn:hover {
+    background: var(--first);
+    color: var(--white);
+}
+
+/* Delete */
+.delete-btn {
+    background: rgba(173,100,127,0.15);
+    color: var(--error);
+}
+
+.delete-btn:hover {
+    background: var(--error);
+    color: var(--white);
+}
+
+/* =========================
+   CORE MODAL SYSTEM
+   ========================= */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    animation: modalFadeIn 0.2s ease-out;
+}
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.modal.show {
+    display: flex !important;
+}
+
+/* Modal content */
+.modal-content {
+    background: #f8f6f2; /* Cream lebih soft */
+    border-radius: 10px;
+    width: 90%;
+    max-width: 750px; /* Diperkecil dari 850px */
+    max-height: 80vh; /* Diperkecil dari 85vh */
+    position: relative;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    animation: modalSlideUp 0.25s ease-out;
+    overflow: hidden;
+    border: 1px solid rgba(100, 130, 173, 0.08);
+}
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header & Close Button */
+.modal-header {
+    background: linear-gradient(135deg, var(--first), var(--second));
+    color: var(--white);
+    padding: 18px 24px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--white);
+    color: var(--dark-gray);
+    font-size: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 10;
+    box-shadow: 0 2px 6px var(--shadow-soft);
+    padding-left: 8px;
+}
+
+.close-btn:hover {
+    background: var(--error);
+    color: var(--white);
+    transform: rotate(90deg);
+}
+
+/* Body & Layout */
+.modal-body {
+    padding: 24px;
+    background: var(--third);
+    overflow-y: auto;
+}
+
+.user-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 Kolom Sejajar */
+    gap: 24px;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Form Elements */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.form-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--dark-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.form-input, .form-select {
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--light-gray);
+    font-size: 0.9rem;
+    background: var(--white);
+    color: #333;
+    transition: var(--transition);
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--first);
+    box-shadow: 0 0 0 3px rgba(100, 130, 173, 0.12);
+}
+
+/* Special Components */
+.expiration-row {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-forever {
+    padding: 0 15px;
+    background: var(--white);
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius-sm);
+    color: var(--dark-gray);
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-forever:hover {
+    background: var(--first);
+    color: var(--white);
+    border-color: var(--first);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+}
+
+/* Footer & Action Buttons */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(100, 130, 173, 0.08);
+    border-radius: 0 0 10px 10px;
+    background-color: var(--third);
+}
+
+.btn-cancel, .btn-lanjut {
+    padding: 10px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+}
+
+.btn-cancel {
+    background: var(--first);
+    color: var(--white);
+    border-color: rgba(100, 130, 173, 0.2);
+}
+.btn-cancel:hover {
+    background: var(--second);
+    color: white;
+}
+
+.btn-lanjut {
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+    background: var(--success);
+    color: var(--white);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+.btn-lanjut:hover {
+    background: #229d3c;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+    .accordion-container {
+        margin: 10px;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 640px) {
+    .modal-content {
+        max-width: 100%;
+    }
+
+    .modal-form-grid {
+        grid-template-columns: 1fr;
+    }
+}

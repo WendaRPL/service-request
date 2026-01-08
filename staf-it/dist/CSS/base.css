@@ -1,0 +1,121 @@
+/* =========================
+   CSS VARIABLES
+========================= */
+:root {
+    --first: #6482AD;
+    --second: #7FA1C3;
+    --third: #E2DAD6;
+    --fourth: #F5EDED;
+    --white: #FFFFFF;
+    --dark-gray: #4A5C7A;
+    --medium-gray: #8A99B3;
+    --light-gray: #D1D9E6;
+    --success: #7AAD64;
+    --error: #AD647F;
+    --shadow-light: rgba(100, 130, 173, 0.15);
+    --shadow-medium: rgba(74, 92, 122, 0.25);
+    --shadow-soft: rgba(100, 130, 173, 0.12);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* =========================
+   RESET & BASE STYLES
+========================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--fourth);
+    color: var(--dark-gray);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    max-height: 100vh;
+    transition: var(--transition);
+}
+
+/* =========================
+   MAIN CONTENT AREA (Base untuk semua halaman)
+========================= */
+.dashboard-content {
+    flex: 1;
+    padding: 70px 20px 20px 20px;
+    margin-left: 180px;
+    transition: var(--transition);
+    height: 100vh;
+    overflow-y: auto;
+    max-height: 100vh;
+}
+
+.container.sidebar-collapsed .dashboard-content {
+    margin-left: 0;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+.dashboard-content h1 {
+    color: var(--first);
+    margin: 10px 20px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* =========================
+   CUSTOM SCROLLBAR
+========================= */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--fourth);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--light-gray);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--medium-gray);
+}
+
+/* =========================
+   UTILITY CLASSES
+========================= */
+.text-sm {
+    font-size: 0.8rem !important;
+}
+
+.text-xs {
+    font-size: 0.75rem !important;
+}
+
+.p-compact {
+    padding: 8px !important;
+}
+
+.m-compact {
+    margin: 5px !important;
+}
+
+@media (max-width: 768px) {
+    .dashboard-content {
+        padding: auto !important;
+        margin: 0% !important;
+    }
+}

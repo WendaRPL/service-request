@@ -1,0 +1,2392 @@
+/* =========================
+   MAIN LAYOUT
+========================= */
+.main-layout {
+    display: grid;
+    grid-template-columns: 0.3fr 0.7fr; /* 30% Open, 70% Queue */
+    gap: 10px;
+    margin-bottom: 15px;
+    height: calc(100vh - 170px);
+    min-height: 400px;
+    margin-left: -5px !important;
+}
+
+/* =========================
+   URGENCY QUEUE PANEL
+========================= */
+.urgency-queue-panel {
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    padding: 15px;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    border: 1px solid var(--light-gray);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.urgency-queue-panel h2 {
+    color: var(--first);
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.sort-info {
+    color: var(--medium-gray);
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.select-all-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background-color: var(--fourth);
+    border-radius: var(--radius-sm);
+}
+
+.select-all-row input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: var(--first);
+}
+
+.select-all-row label {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.action-btn {
+    background-color: var(--first);
+    color: var(--white);
+    border: none;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: var(--transition);
+    min-width: 70px;
+}
+
+.action-btn:hover {
+    background-color: var(--second);
+}
+
+.queue-items-container {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* =========================
+   QUEUE ITEMS HORIZONTAL
+========================= */
+.queue-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 10px;
+    background-color: var(--fourth);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+}
+.queue-item:nth-child(1) {
+    border-left-color: var(--error);
+}
+.queue-item:nth-child(2),
+.queue-item:nth-child(3) {
+    border-left-color: var(--success);
+}
+.queue-item:hover {
+    background-color: var(--third);
+}
+.queue-item input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--first);
+}
+.queue-item label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    padding-right: 80px; /* Ruang untuk datetime */
+}
+.queue-name {
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+.queue-store {
+    background-color: var(--first);
+    color: var(--white);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+.queue-datetime {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+.queue-datetime .date {
+    font-size: 0.70rem;
+    color: var(--medium-gray);
+}
+.queue-datetime .time {
+    font-size: 0.75rem;
+    color: var(--dark-gray);
+    font-weight: 600;
+}
+/* Gunakan badge yang sudah ada */
+.urgency-badge {
+    padding: 3px 8px;
+    font-size: 0.65rem;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.urgency-badge.very-high {
+    background-color: #c0392b;
+}
+.urgency-badge.high {
+    background-color: var(--error);
+}
+.urgency-badge.medium {
+    background-color: var(--first);
+}
+.urgency-badge.low {
+    background-color: var(--success);
+}
+.open-detail-btn {
+    background-color: var(--white);
+    color: var(--first);
+    border: 1px solid var(--first);
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: var(--transition);
+    min-width: 80px;
+}
+.open-detail-btn:hover {
+    background-color: var(--first);
+    color: var(--white);
+}
+
+/* =========================
+   ALL REQUEST TABLE
+========================= */
+.all-request-table {
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    padding: 15px;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    border: 1px solid var(--light-gray);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.all-request-table h2 {
+    color: var(--first);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.table-container {
+    flex: 1;
+    overflow: none;
+    min-height: 0;
+}
+
+.dataTables_length {
+    justify-self: start !important;
+}
+.dataTables_filter   {
+    justify-self: end !important;
+    margin-bottom: 10px;
+    margin-right: 5px;
+}
+.dataTables_filter label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-weight: 500 !important;
+    color: var(--dark-gray) !important;
+}
+.dataTables_filter input {
+    padding: 8px 12px !important;
+    border: 1px solid var(--light-gray) !important;
+    border-radius: var(--radius-sm) !important;
+    font-size: 0.85rem !important;
+    transition: var(--transition) !important;
+}
+.dataTables_filter input:focus {
+    outline: none !important;
+    border-color: var(--first) !important;
+    box-shadow: 0 0 0 3px rgba(100, 130, 173, 0.1) !important;
+}
+
+/* paginate css */
+.dataTables_paginate {
+    margin-top: 5px !important;
+    justify-self: end !important;
+    margin-right: 10px;
+}
+.dataTables_paginate .paginate_button {
+    padding: 6px 12px !important;
+    margin: 0 3px !important;
+    border: 1px solid var(--light-gray) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--white) !important;
+    color: var(--dark-gray) !important;
+    font-size: 0.8rem !important;
+    transition: var(--transition) !important;
+}
+.dataTables_paginate .paginate_button:hover {
+    background: var(--first) !important;
+    color: var(--white) !important;
+    border-color: var(--first) !important;
+}
+.dataTables_paginate .paginate_button.current {
+    background: var(--white) !important;
+    color: var(--medium-gray) !important;
+    border-color: var(--first) !important;
+    font-weight: 600 !important;
+}
+.dataTables_paginate .paginate_button.disabled {
+    background: var(--light-gray) !important;
+    color: var(--medium-gray) !important;
+    cursor: not-allowed !important;
+}
+
+/* Responsive Child Row Styling  */
+table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child::before {
+    content: "➤" !important;
+    font-weight: bold !important;
+    color: var(--first) !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.parent > td:first-child::before {
+    content: "⮟" !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.child > td {
+    padding: 15px !important;
+    background-color: var(--fourth) !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.child ul.dtr-details {
+    width: 100% !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.child ul.dtr-details li {
+    display: grid !important;
+    grid-template-columns: 120px 1fr !important;
+    gap: 12px !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid var(--light-gray) !important;
+    font-size: 0.85rem !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.child ul.dtr-details li:last-child {
+    border-bottom: none !important;
+}
+table.dataTable.dtr-inline.collapsed .dtr-title {
+    font-weight: 600 !important;
+    color: var(--first) !important;
+    white-space: nowrap !important;
+}
+table.dataTable.dtr-inline.collapsed .dtr-data {
+    color: var(--dark-gray) !important;
+    word-break: break-word !important;
+}
+/* Clear float untuk wrapper */
+.dataTables_wrapper:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+/* Untuk menyelaraskan filter dan pagination */
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_paginate {
+    float: right;
+}
+.dataTables_wrapper .dataTables_info {
+    float: left;
+}
+/* DataTables Info */
+.dataTables_info {
+    font-size: 0.85rem !important;
+    color: var(--medium-gray) !important;
+    margin-left: 10px;
+}
+
+/* datatable css */
+table.dataTable {
+    width: 100% !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm) !important;
+    overflow: hidden !important;
+}
+table.dataTable thead th {
+    background-color: var(--first);
+    color: var(--white);
+    padding: 10px 8px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+table.dataTable tbody td {
+    padding: 10px 8px;
+    vertical-align: middle;
+}
+table.dataTable tbody tr:hover {
+    background-color: var(--fourth);
+}
+
+thead {
+    background-color: var(--first);
+    color: var(--white);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+thead th {
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+thead th:first-child {
+    border-top-left-radius: var(--radius-sm);
+}
+thead th:last-child {
+    border-top-right-radius: var(--radius-sm);
+}
+/* Column Number Styling (Background Khusus untuk Kolom No.) */
+table.dataTable thead th:first-child,
+table.dataTable tbody td:first-child {
+    background-color: rgba(100, 130, 173, 0.08) !important;
+    width: 30px !important;
+}
+
+tbody tr {
+    transition: var(--transition);
+    border-bottom: 1px solid var(--light-gray);
+}
+
+tbody tr:hover {
+    background-color: var(--fourth);
+}
+
+tbody td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--light-gray);
+    vertical-align: middle;
+}
+
+.status-on-process {
+    color: var(--first);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+}
+.on-process-card {
+    background-color: var(--shadow-light) !important;
+    padding: 4px !important;
+    border-radius: 15px !important;
+    border: 1px solid var(--first);
+    text-align: center;
+    
+}
+
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn-detail,
+.btn-transfer,
+.btn-status,
+.btn-lanjut {
+    padding: 5px 8px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 500;
+    transition: var(--transition);
+    white-space: nowrap;
+    min-width: 70px;
+}
+
+.btn-detail {
+    background-color: var(--white);
+    color: var(--first);
+    border: 1px solid var(--first);
+}
+
+.btn-detail:hover {
+    background-color: var(--first);
+    color: var(--white);
+}
+
+.btn-transfer {
+    background-color: var(--second);
+    color: var(--white);
+}
+
+.btn-transfer:hover {
+    background-color: var(--first);
+}
+
+.btn-status {
+    background-color: var(--white);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.btn-status:hover {
+    background-color: var(--success);
+    color: var(--white);
+}
+
+/* td-nya biarin normal */
+.urgency-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* card wrapper */
+.urgency-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 15px;
+    background-color: var(--shadow-light);
+    border: 1px solid #ddd;
+}
+/* kode S / H */
+.urgency-code {
+    font-weight: 400;
+    font-size: 0.75rem;
+}
+/* badge base */
+.urgency-badge {
+    padding: 3px 5px;
+    font-size: 0.65rem;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    padding-bottom: 5px !important;
+}
+/* variants (urut bahaya → aman) */
+.urgency-badge.very-high {
+    background-color: #c0392b;
+}
+.urgency-badge.high {
+    background-color: var(--error);
+}
+.urgency-badge.medium {
+    background-color: var(--first);
+}
+.urgency-badge.low {
+    background-color: var(--success);
+}
+
+/* field queue */
+.sorting_disabled {
+    text-align: center !important;
+}
+
+/* =========================
+   DATATABLE RESPONSIVE CHILD ROW (RAPI)
+========================= */
+table.dataTable.dtr-inline.collapsed
+> tbody
+> tr.child
+> td {
+    padding: 10px 12px;
+    background-color: var(--fourth);
+}
+table.dataTable.dtr-inline.collapsed
+> tbody
+> tr.child
+ul.dtr-details {
+    width: 100%;
+}
+table.dataTable.dtr-inline.collapsed
+> tbody
+> tr.child
+ul.dtr-details li {
+    display: grid;
+    grid-template-columns: 110px 1fr; /* kiri label, kanan value */
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--light-gray);
+    font-size: 0.8rem;
+}
+table.dataTable.dtr-inline.collapsed
+> tbody
+> tr.child
+ul.dtr-details li:last-child {
+    border-bottom: none;
+}
+/* label kiri */
+table.dataTable.dtr-inline.collapsed
+.dtr-title {
+    font-weight: 600;
+    color: var(--first);
+    white-space: nowrap;
+}
+/* value kanan */
+table.dataTable.dtr-inline.collapsed
+.dtr-data {
+    color: var(--dark-gray);
+    word-break: break-word;
+}
+
+/* =========================
+   NOTED SECTION
+========================= */
+.noted-section {
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    padding: 15px;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    border: 1px solid var(--light-gray);
+    border-left: 4px solid var(--second);
+    margin-top: 10px;
+    font-size: 0.8rem;
+}
+
+.noted-section strong {
+    color: var(--first);
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.noted-section ul {
+    list-style: none;
+    padding-left: 15px;
+    margin-top: 5px;
+}
+
+.noted-section li {
+    padding: 4px 0;
+    color: var(--dark-gray);
+    font-size: 0.8rem;
+    position: relative;
+}
+
+.noted-section li:before {
+    content: "•";
+    color: var(--second);
+    font-size: 1.2rem;
+    position: absolute;
+    left: -15px;
+    top: 2px;
+}
+
+/* datatables custom */
+.dataTables_wrapper {
+    width: 100%;
+}
+
+.border-queue {
+    border-bottom: 1px solid var(--light-gray);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+/* =========================
+   ACTION DROPDOWN STYLES
+========================= */
+.action-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.action-btn {
+    background-color: var(--first);
+    color: var(--white);
+    border: none;
+    padding: 6px 25px 6px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: var(--transition);
+    min-width: 80px;
+    position: relative;
+}
+
+.action-btn:hover {
+    background-color: var(--second);
+}
+
+.action-dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: var(--white);
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 15px var(--shadow-medium);
+    overflow: hidden;
+    right: 0;
+    margin-top: 8px;
+    z-index: 1000;
+    min-width: 160px;
+}
+
+.action-dropdown-menu.show {
+    display: block;
+    animation: dropdownFade 0.2s ease;
+}
+
+@keyframes dropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.action-dropdown-menu .dropdown-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--dark-gray);
+    transition: var(--transition);
+    border-bottom: 1px solid var(--fourth);
+    white-space: nowrap;
+}
+
+.action-dropdown-menu .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.action-dropdown-menu .dropdown-item:hover {
+    background-color: var(--fourth);
+}
+
+.action-dropdown-menu .dropdown-item[data-action="accept"]:hover {
+    color: var(--success);
+    background-color: rgba(122, 173, 100, 0.1);
+}
+
+.action-dropdown-menu .dropdown-item[data-action="change-urgency"]:hover {
+    color: var(--first);
+    background-color: rgba(100, 130, 173, 0.1);
+}
+
+/* =========================
+   MODAL BASE STYLES
+========================= */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal.show {
+    display: flex !important;
+}
+
+/* Modal content */
+.modal-content {
+    background: #f8f6f2; /* Cream lebih soft */
+    border-radius: 10px;
+    width: 90%;
+    max-width: 750px; /* Diperkecil dari 850px */
+    max-height: 80vh; /* Diperkecil dari 85vh */
+    position: relative;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    animation: modalSlideUp 0.25s ease-out;
+    overflow: hidden;
+    border: 1px solid rgba(100, 130, 173, 0.08);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Close button */
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(100, 130, 173, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #6475a5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    background: var(--error);
+    color: white;
+    transform: rotate(90deg);
+}
+
+/* Modal detail */
+.modal-detail {
+    background-color: #f8f6f2;
+    border-radius: 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.modal-header {
+    background: var(--first);
+    color: white;
+    padding: 18px 25px;
+    position: relative;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-header h2 {
+    color: white;
+    font-size: 1.25rem; /* Diperkecil dari 1.5rem */
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+/* Modal body - single column dengan grid field */
+.modal-body {
+    padding: 15px 25px;
+    overflow-y: auto;
+    flex: 1;
+    max-height: calc(80vh - 120px);
+    background: var(--third);
+}
+
+/* Field layout grid untuk 2 kolom */
+.field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px; /* Jarak antar kolom */
+    margin-bottom: 10px;
+}
+
+/* Field item */
+.field-item {
+    margin-bottom: 0px;
+}
+
+.field-item:last-child {
+    margin-bottom: 0;
+}
+
+.field-label {
+    display: block;
+    font-size: 0.85rem; /* Diperkecil */
+    font-weight: 600;
+    color: #3b475d;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.field-value {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(100, 130, 173, 0.12);
+    border-radius: 6px;
+    font-size: 0.88rem; /* Diperkecil dari 0.95rem */
+    color: #333;
+    min-height: 36px;
+    box-sizing: border-box;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+/* Textarea khusus */
+.textarea-value {
+    min-height: 70px;
+    white-space: pre-line;
+    overflow-wrap: break-word;
+    padding: 10px;
+    resize: none;
+    font-family: inherit;
+    font-size: 0.88rem;
+}
+
+/* Status khusus */
+.status-value {
+    color: var(--first);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Foto preview */
+.foto-preview {
+    width: 100%;
+    height: 150px; /* Diperkecil dari 180px */
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(100, 130, 173, 0.12);
+    background: white;
+}
+
+.foto-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 15px;
+    color: #8a94b5;
+    text-align: center;
+}
+
+.foto-placeholder i {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    color: #b8c1e0;
+}
+
+.foto-placeholder span {
+    font-size: 0.8rem;
+    color: #8a94b5;
+}
+
+/* Modal actions */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 15px;
+    border-top: 1px solid rgba(100, 130, 173, 0.08);
+    border-radius: 0 0 10px 10px;
+    background-color: var(--third);
+}
+
+/* Button styles */
+.btn-cancel,
+.btn-submit,
+.btn-accept,
+.btn-lanjut {
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    min-width: 90px;
+}
+
+.btn-accept {
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+    background: var(--success);
+    color: var(--white);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+.btn-accept:hover {
+    background: #229d3c;
+}
+
+.btn-cancel {
+    background: var(--first);
+    color: var(--white);
+    border-color: rgba(100, 130, 173, 0.2);
+}
+.btn-cancel:hover {
+    background: var(--second);
+    color: white;
+}
+
+.btn-submit {
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+    background: var(--success);
+    color: var(--white);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+.btn-submit:hover {
+    background: #229d3c;
+}
+
+.btn-lanjut {
+    background: var(--success);
+    color: white;
+    border: none;
+}
+.btn-lanjut:hover {
+    background: #349737;
+}
+
+/* =========================
+   MODAL DETAIL REQUEST
+========================= */
+#requestDetailModal .modal-content {
+    max-width: 750px;
+}
+
+/* Field terakhir (foto) full width */
+.full-width-field {
+    grid-column: 1 / -1;
+    margin-top: 5px;
+}
+
+/* =========================
+   MODAL TRANSFER HANDLER
+========================= */
+#transferHandlerModal .modal-content {
+    max-width: 700px;
+}
+
+/* Request info section */
+#transferHandlerModal .request-info {
+    background: var(--third);
+    border: 1px solid rgba(100, 130, 173, 0.12);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#transferHandlerModal .form-group {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(100, 130, 173, 0.12);
+}
+
+#transferHandlerModal .form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #3c485f;
+    font-size: 0.95rem;
+}
+
+/* Styling untuk Select Dropdown */
+#transferHandlerModal .form-select {
+    width: 100%;
+    padding: 10px 10px;
+    border: 2px solid rgba(100, 130, 173, 0.2);
+    border-radius: 8px;
+    font-size: 0.90rem;
+    background: white;
+    color: #333;
+    transition: all 0.2s ease;
+    appearance: none; /* Hapus default arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236475a5' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+/* Hover state */
+#transferHandlerModal .form-select:hover {
+    border-color: rgba(100, 130, 173, 0.4);
+}
+
+/* Focus state */
+#transferHandlerModal .form-select:focus {
+    outline: none;
+    border-color: var(--first);
+    box-shadow: 0 0 0 3px rgba(100, 130, 173, 0.15);
+}
+
+/* Styling untuk option disabled */
+#transferHandlerModal .form-select option:disabled {
+    color: #999;
+    background-color: #f8f9fa;
+    font-style: italic;
+}
+
+/* Styling untuk option biasa */
+#transferHandlerModal .form-select option {
+    padding: 10px;
+    color: #333;
+    background: white;
+}
+
+/* Styling untuk saat dropdown dibuka */
+#transferHandlerModal .form-select option:checked {
+    background-color: var(--first);
+    color: white;
+}
+
+/* Styling untuk dropdown di berbagai browser */
+#transferHandlerModal .form-select::-ms-expand {
+    display: none; /* Hide default arrow in IE */
+}
+
+/* Webkit browsers (Chrome, Safari) */
+#transferHandlerModal .form-select::-webkit-scrollbar {
+    width: 8px;
+}
+
+#transferHandlerModal .form-select::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#transferHandlerModal .form-select::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+#transferHandlerModal .form-select::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* =========================
+   MODAL UBAH STATUS
+========================= */
+#ubahStatusModal .modal-content {
+    max-width: 900px; /* Lebih lebar karena form kompleks */
+}
+
+/* User Info Section */
+.user-info-section {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(100, 130, 173, 0.12);
+}
+
+.user-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--first);
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Form Grid Layout */
+.status-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Form Group */
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #5a6780;
+    margin-bottom: 8px;
+}
+
+/* Form Input */
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(100, 130, 173, 0.12);
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--first);
+    box-shadow: 0 0 0 3px rgba(100, 130, 173, 0.1);
+}
+
+/* Textarea */
+.form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(100, 130, 173, 0.12);
+    border-radius: 6px;
+    font-size: 0.88rem;
+    color: #333;
+    transition: all 0.2s ease;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--first);
+    box-shadow: 0 0 0 3px rgba(100, 130, 173, 0.1);
+}
+
+/* Select */
+.form-select {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(100, 130, 173, 0.12);
+    border-radius: 6px;
+    font-size: 0.88rem;
+    color: #333;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236475a5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--first);
+    box-shadow: 0 0 0 3px rgba(100, 130, 173, 0.1);
+}
+
+/* Radio Group */
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #333;
+}
+
+.radio-label input[type="radio"] {
+    display: none;
+}
+
+.radio-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(100, 130, 173, 0.3);
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom {
+    border-color: var(--first);
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--first);
+    border-radius: 50%;
+}
+
+.radio-custom {
+    font-size: 0.88rem;
+    background-color: rgb(255, 255, 255);
+}
+
+/* Checkbox */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #333;
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(100, 130, 173, 0.3);
+    border-radius: 4px;
+    display: inline-block;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
+    background-color: var(--first);
+    border-color: var(--first);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.checkbox-custom {
+    font-size: 0.88rem;
+    background-color: rgb(255, 255, 255);
+}
+
+/* Noted Section */
+.noted-section {
+    background: rgba(100, 130, 173, 0.05);
+    border: 1px solid rgba(100, 130, 173, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.noted-section strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--first);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.noted-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.noted-item {
+    font-size: 0.8rem;
+    color: #5a6780;
+    padding-left: 15px;
+    position: relative;
+}
+
+.noted-item::before {
+    content: '•';
+    position: absolute;
+    left: 5px;
+    color: var(--first);
+}
+
+/* Modal Password Styles */
+.password-modal {
+    max-width: 500px;
+}
+
+.password-modal-body {
+    padding: 20px;
+}
+
+.user-confirmation {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.confirmation-item {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.confirmation-item:last-child {
+    margin-bottom: 0;
+}
+
+.confirmation-label {
+    font-weight: 600;
+    width: 80px;
+    color: #333;
+}
+
+.confirmation-value {
+    color: #555;
+    flex: 1;
+}
+
+.password-section {
+    margin-bottom: 20px;
+}
+
+.password-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input {
+    width: 100%;
+    padding-right: 45px;
+}
+
+.btn-show-password {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-show-password .eye-icon {
+    font-size: 18px;
+}
+
+.password-hint {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.confirmation-checkbox {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+}
+
+/* Button States */
+.btn-submit {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-submit:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.btn-submit:hover:not(:disabled) {
+    background-color: #45a049;
+}
+
+/* =========================
+   RESPONSIVE BREAKPOINTS 
+========================= */
+
+/* LAPTOP/TABLET LANDSCAPE (992px - 1200px) */
+@media (max-width: 1200px) {
+    /* Modal Responsive - All Modals */
+    .modal-content {
+        max-width: 700px;
+    }
+    
+    #ubahStatusModal .modal-content {
+        max-width: 850px;
+    }
+    
+    /* Dashboard Layout */
+    .main-layout {
+        grid-template-columns: 0.35fr 0.65fr;
+        gap: 18px;
+        height: calc(100vh - 160px);
+        min-height: 380px;
+    }
+    
+    .field-grid {
+        gap: 12px;
+    }
+    
+    /* Ubah Status Modal */
+    .status-form-grid {
+        gap: 25px;
+    }
+    
+    .form-column {
+        gap: 18px;
+    }
+}
+
+/* TABLET PORTRAIT (768px - 991px) */
+@media (max-width: 991px) {
+    /* Modal Responsive - All Modals */
+    .modal-content {
+        width: 90%;
+        max-height: 85vh;
+    }
+    
+    #ubahStatusModal .modal-content {
+        max-width: 95%;
+    }
+    
+    .modal-body {
+        max-height: calc(85vh - 120px);
+        padding: 20px;
+    }
+    
+    #ubahStatusModal .modal-body {
+        max-height: calc(85vh - 130px);
+    }
+    
+    .modal-header {
+        padding: 18px 20px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    /* Dashboard Layout Responsive */
+    .main-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px;
+        height: auto !important;
+        min-height: auto;
+        margin-bottom: 16px;
+    }
+    
+    .urgency-queue-panel,
+    .all-request-table {
+        width: 100% !important;
+        height: fit-content;
+        min-height: fit-content;
+        flex-shrink: 0;
+    }
+    
+    /* Field grid jadi 1 kolom - All Modals */
+    .field-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    /* Ubah Status Modal Responsive */
+    .status-form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .form-column {
+        gap: 16px;
+    }
+    
+    .user-info-section {
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+    }
+    
+    .noted-items {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    .noted-item {
+        font-size: 0.78rem;
+    }
+    
+    /* Form elements tablet - Ubah Status */
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: 0.92rem;
+        padding: 11px 13px;
+    }
+    
+    .radio-label,
+    .checkbox-label {
+        font-size: 0.86rem;
+    }
+    
+    /* Modal actions - All Modals */
+    .modal-actions {
+        padding: 15px 20px;
+        gap: 10px;
+    }
+    
+    .btn-cancel,
+    .btn-lanjut,
+    .btn-submit {
+        min-width: 85px;
+        font-size: 0.85rem;
+    }
+}
+
+/* MOBILE LANDSCAPE (576px - 767px) */
+@media (max-width: 767px) and (orientation: landscape) {
+    /* Modal Responsive - All Modals */
+    .modal {
+        padding: 10px;
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+    }
+    
+    #ubahStatusModal .modal-content {
+        max-height: 88vh;
+    }
+    
+    .modal-body {
+        max-height: calc(90vh - 120px);
+        padding: 15px;
+    }
+    
+    #ubahStatusModal .modal-body {
+        max-height: calc(88vh - 130px);
+    }
+    
+    /* Dashboard Layout Mobile Landscape */
+    .main-layout {
+        flex-direction: row !important;
+        gap: 12px;
+        height: calc(100vh - 140px) !important;
+        margin-bottom: 12px;
+    }
+    
+    .urgency-queue-panel {
+        flex: 0.4;
+        height: 100% !important;
+        min-height: auto;
+    }
+    
+    .all-request-table {
+        flex: 0.6;
+        height: 100% !important;
+        min-height: auto;
+    }
+    
+    /* Field tetap 1 kolom untuk landscape - All Modals */
+    .field-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    /* Ubah Status Modal Mobile Landscape */
+    .status-form-grid {
+        gap: 15px;
+    }
+    
+    .form-column {
+        gap: 12px;
+    }
+    
+    .user-info-section {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+    }
+    
+    .info-label,
+    .info-value {
+        font-size: 0.85rem;
+    }
+    
+    /* Form elements mobile landscape - Ubah Status */
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: 0.88rem;
+        padding: 10px 12px;
+    }
+    
+    .form-textarea {
+        min-height: 70px;
+    }
+    
+    .radio-group {
+        gap: 8px;
+    }
+    
+    .radio-custom,
+    .checkbox-custom {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .radio-label input[type="radio"]:checked + .radio-custom::after {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+        font-size: 10px;
+    }
+    
+    .noted-section {
+        padding: 12px;
+        margin-top: 15px;
+    }
+    
+    .noted-section strong {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+    
+    /* Font size lebih kecil untuk landscape - All Modals */
+    .field-label {
+        font-size: 0.75rem;
+    }
+    
+    .field-value {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+        min-height: 34px;
+    }
+}
+
+/* MOBILE PORTRAIT (576px - 767px) */
+@media (max-width: 767px) and (orientation: portrait) {
+    /* Modal Responsive - All Modals */
+    .modal-content {
+        width: 92%;
+        max-height: 88vh;
+    }
+    
+    #ubahStatusModal .modal-content {
+        width: 94%;
+        max-height: 90vh;
+    }
+    
+    .modal-body {
+        max-height: calc(88vh - 120px);
+        padding: 18px;
+    }
+    
+    #ubahStatusModal .modal-body {
+        max-height: calc(90vh - 130px);
+        padding: 18px;
+    }
+    
+    .modal-header {
+        padding: 16px 18px;
+    }
+    
+    #ubahStatusModal .modal-header {
+        padding: 16px 20px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.15rem;
+    }
+    
+    #ubahStatusModal .modal-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    /* Ubah Status Modal Mobile Portrait */
+    .user-info-section {
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        min-width: 50px;
+    }
+    
+    .info-value {
+        font-size: 0.9rem;
+    }
+    
+    /* Form elements mobile portrait - Ubah Status */
+    .form-label {
+        font-size: 0.82rem;
+        margin-bottom: 6px;
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+    }
+    
+    .form-textarea {
+        min-height: 75px;
+    }
+    
+    .radio-label,
+    .checkbox-label {
+        font-size: 0.85rem;
+    }
+    
+    .noted-section {
+        padding: 14px;
+        margin-top: 18px;
+    }
+    
+    .noted-item {
+        font-size: 0.78rem;
+        padding-left: 12px;
+    }
+    
+    /* Dashboard Layout Mobile Portrait */
+    .main-layout {
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+    
+    .urgency-queue-panel,
+    .all-request-table {
+        height: fit-content;
+        min-height: fit-content;
+    }
+    
+    /* Field 1 kolom - All Modals */
+    .field-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    /* Font size mobile - All Modals */
+    .field-label {
+        font-size: 0.75rem;
+    }
+    
+    .field-value {
+        font-size: 0.85rem;
+        padding: 9px 11px;
+    }
+    
+    /* Foto preview lebih kecil - Detail Modal */
+    .foto-preview {
+        height: 130px;
+    }
+    
+}
+
+/* MOBILE SMALL (400px - 575px) */
+@media (max-width: 575px) {
+    /* Modal Responsive - All Modals */
+    .modal {
+        padding: 8px;
+    }
+    
+    .modal-content {
+        width: 94%;
+        max-height: 90vh;
+    }
+    
+    #ubahStatusModal .modal-content {
+        width: 96%;
+        max-height: 92vh;
+    }
+    
+    .modal-body {
+        max-height: calc(90vh - 110px);
+        padding: 15px;
+    }
+    
+    #ubahStatusModal .modal-body {
+        max-height: calc(92vh - 120px);
+        padding: 16px;
+    }
+    
+    .modal-header {
+        padding: 14px 16px;
+    }
+    
+    #ubahStatusModal .modal-header {
+        padding: 14px 18px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    #ubahStatusModal .modal-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    /* Ubah Status Modal Small Mobile */
+    .user-info-section {
+        gap: 6px;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+    }
+    
+    .user-info-item {
+        gap: 6px;
+    }
+    
+    .info-label {
+        font-size: 0.8rem;
+    }
+    
+    .info-value {
+        font-size: 0.85rem;
+    }
+    
+    .status-form-grid {
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .form-column {
+        gap: 14px;
+    }
+    
+    /* Form elements small mobile - Ubah Status */
+    .form-label {
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: 0.86rem;
+        padding: 9px 11px;
+        border-radius: 5px;
+    }
+    
+    .form-select {
+        padding-right: 32px;
+        background-size: 14px;
+    }
+    
+    .form-textarea {
+        min-height: 65px;
+        font-size: 0.86rem;
+    }
+    
+    .radio-group {
+        gap: 6px;
+    }
+    
+    .radio-label,
+    .checkbox-label {
+        font-size: 0.82rem;
+        gap: 6px;
+    }
+    
+    .radio-custom,
+    .checkbox-custom {
+        width: 15px;
+        height: 15px;
+    }
+    
+    .radio-label input[type="radio"]:checked + .radio-custom::after {
+        width: 7px;
+        height: 7px;
+    }
+    
+    .checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+        font-size: 9px;
+    }
+    
+    .noted-section {
+        padding: 12px;
+        margin-top: 16px;
+    }
+    
+    .noted-section strong {
+        font-size: 0.82rem;
+        margin-bottom: 6px;
+    }
+    
+    .noted-items {
+        gap: 5px;
+    }
+    
+    .noted-item {
+        font-size: 0.75rem;
+        padding-left: 10px;
+    }
+    
+    /* Dashboard Layout Small Mobile */
+    .main-layout {
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .urgency-queue-panel,
+    .all-request-table {
+        height: fit-content;
+        min-height: fit-content;
+        padding: 12px !important;
+    }
+    
+    /* Field items - All Modals */
+    .field-grid {
+        gap: 10px;
+    }
+    
+    .field-item {
+        margin-bottom: 12px;
+    }
+    
+    /* Font size lebih kecil - All Modals */
+    .field-label {
+        font-size: 0.72rem;
+    }
+    
+    .field-value {
+        font-size: 0.82rem;
+        padding: 8px 10px;
+        min-height: 32px;
+    }
+    
+    /* Textarea lebih kecil - Detail & Transfer Modals */
+    .textarea-value {
+        min-height: 60px;
+        padding: 8px;
+        font-size: 0.82rem;
+    }
+    
+    /* Foto preview kecil - Detail Modal */
+    .foto-preview {
+        height: 120px;
+    }
+    
+    .foto-placeholder {
+        padding: 10px;
+    }
+    
+    .foto-placeholder i {
+        font-size: 1.5rem;
+    }
+    
+    .foto-placeholder span {
+        font-size: 0.75rem;
+    }
+    
+}
+
+/* MOBILE EXTRA SMALL (< 400px) */
+@media (max-width: 399px) {
+    /* Modal Responsive - All Modals */
+    .modal {
+        padding: 5px;
+    }
+    
+    .modal-content {
+        width: 96%;
+        max-height: 92vh;
+        border-radius: 8px;
+    }
+    
+    #ubahStatusModal .modal-content {
+        width: 98%;
+        max-height: 94vh;
+    }
+    
+    .modal-body {
+        max-height: calc(92vh - 100px);
+        padding: 12px;
+    }
+    
+    #ubahStatusModal .modal-body {
+        max-height: calc(94vh - 110px);
+        padding: 14px;
+    }
+    
+    .modal-header {
+        padding: 12px 14px;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    #ubahStatusModal .modal-header {
+        padding: 12px 16px;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .modal-header h2 {
+        font-size: 1rem;
+    }
+    
+    #ubahStatusModal .modal-header h2 {
+        font-size: 1rem;
+    }
+    
+    /* Ubah Status Modal Extra Small */
+    .user-info-section {
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+    }
+    
+    .user-info-item {
+        gap: 4px;
+    }
+    
+    .info-label {
+        font-size: 0.78rem;
+        min-width: 45px;
+    }
+    
+    .info-value {
+        font-size: 0.82rem;
+    }
+    
+    .status-form-grid {
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+    
+    .form-column {
+        gap: 12px;
+    }
+    
+    /* Form elements extra small mobile - Ubah Status */
+    .form-label {
+        font-size: 0.78rem;
+        margin-bottom: 4px;
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: 0.82rem;
+        padding: 8px 10px;
+        border-radius: 4px;
+        border-width: 1px;
+    }
+    
+    .form-select {
+        padding-right: 28px;
+        background-size: 12px;
+        background-position: right 10px center;
+    }
+    
+    .form-textarea {
+        min-height: 60px;
+        font-size: 0.82rem;
+    }
+    
+    .radio-group {
+        gap: 5px;
+    }
+    
+    .radio-label,
+    .checkbox-label {
+        font-size: 0.78rem;
+        gap: 5px;
+    }
+    
+    .radio-custom,
+    .checkbox-custom {
+        width: 14px;
+        height: 14px;
+        border-width: 1.5px;
+    }
+    
+    .radio-label input[type="radio"]:checked + .radio-custom::after {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+        font-size: 8px;
+    }
+    
+    .noted-section {
+        padding: 10px;
+        margin-top: 14px;
+        border-radius: 6px;
+    }
+    
+    .noted-section strong {
+        font-size: 0.78rem;
+        margin-bottom: 5px;
+    }
+    
+    .noted-items {
+        gap: 4px;
+    }
+    
+    .noted-item {
+        font-size: 0.72rem;
+        padding-left: 8px;
+    }
+    
+    .noted-item::before {
+        left: 3px;
+    }
+    
+    /* Dashboard Layout Extra Small */
+    .urgency-queue-panel,
+    .all-request-table {
+        padding: 10px !important;
+    }
+    
+    .main-layout {
+        gap: 10px;
+    }
+    
+    /* Field grid compact - All Modals */
+    .field-grid {
+        gap: 8px;
+    }
+    
+    .field-item {
+        margin-bottom: 10px;
+    }
+    
+    /* Font size extra kecil - All Modals */
+    .field-label {
+        font-size: 0.7rem;
+        margin-bottom: 4px;
+    }
+    
+    .field-value {
+        font-size: 0.78rem;
+        padding: 6px 8px;
+        min-height: 30px;
+        border-radius: 4px;
+    }
+    
+    /* Textarea extra kecil - Detail & Transfer Modals */
+    .textarea-value {
+        min-height: 50px;
+        padding: 6px;
+        font-size: 0.78rem;
+    }
+    
+    /* Foto preview sangat kecil - Detail Modal */
+    .foto-preview {
+        height: 100px;
+        border-radius: 4px;
+    }
+    
+    .foto-placeholder {
+        padding: 8px;
+    }
+    
+    .foto-placeholder i {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+    
+    .foto-placeholder span {
+        font-size: 0.7rem;
+    }
+
+    /* Close button kecil - All Modals */
+    .close-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
+        top: 8px;
+        right: 8px;
+    }
+}
+
+/* TINGGI TERBATAS (Max-height special cases) */
+@media (max-height: 600px) {
+    .modal-content {
+        max-height: 95vh;
+    }
+    
+    #ubahStatusModal .modal-content {
+        max-height: 92vh;
+    }
+    
+    .modal-body {
+        max-height: calc(95vh - 120px);
+    }
+    
+    #ubahStatusModal .modal-body {
+        max-height: calc(92vh - 130px);
+        overflow-y: auto;
+    }
+    
+    .field-grid {
+        gap: 8px;
+    }
+    
+    .status-form-grid {
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .form-column {
+        gap: 10px;
+    }
+    
+    .field-item {
+        margin-bottom: 10px;
+    }
+    
+    .field-value {
+        min-height: 32px;
+        padding: 6px 10px;
+    }
+    
+    .textarea-value {
+        min-height: 50px;
+    }
+    
+    .form-textarea {
+        min-height: 60px;
+    }
+    
+    .foto-preview {
+        height: 100px;
+    }
+    
+    .noted-section {
+        margin-top: 15px;
+        padding: 10px;
+    }
+}
+
+@media (max-height: 650px) {
+    #ubahStatusModal .modal-content {
+        max-height: 92vh;
+    }
+    
+    #ubahStatusModal .modal-body {
+        max-height: calc(92vh - 130px);
+    }
+}
+
+/* PRINT STYLES */
+@media print {
+    .modal {
+        position: static;
+        display: flex !important;
+        background: white;
+        padding: 0;
+    }
+    
+    .modal-content {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        max-width: 100%;
+        max-height: none;
+    }
+    
+    #ubahStatusModal .modal-content {
+        max-width: 100%;
+        max-height: none;
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    #ubahStatusModal .modal-body {
+        max-height: none;
+        overflow: visible;
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        background: white !important;
+        border: 1px solid #ccc !important;
+        color: #000 !important;
+    }
+    
+    .radio-custom,
+    .checkbox-custom {
+        border: 1px solid #000 !important;
+    }
+    
+    .close-btn,
+    .modal-actions {
+        display: none;
+    }
+    
+    #ubahStatusModal .close-btn,
+    #ubahStatusModal .modal-actions {
+        display: none;
+    }
+}
