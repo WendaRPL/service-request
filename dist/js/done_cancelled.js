@@ -1,378 +1,484 @@
-// Sample data
-const doneData = [
-    {
-        id: 1,
-        peminta: "John Doe",
-        jenis: "S",
-        kendala: "SFA System Error",
-        tglSelesai: "2025-10-15",
-        handler: "Reza",
-        rating: 5,
-        detail: "Permintaan perbaikan sistem SFA yang error pada modul laporan. Telah diperbaiki dengan update patch terbaru."
-    },
-    {
-        id: 2,
-        peminta: "John doe",
-        jenis: "H",
-        kendala: "Printer Issues",
-        tglSelesai: "2025-10-14",
-        handler: "Aldy",
-        rating: 4,
-        detail: "Printer tidak bisa mencetak dokumen. Masalah pada koneksi jaringan printer, telah diperbaiki dengan konfigurasi ulang."
-    },
-    {
-        id: 3,
-        peminta: "John Doe",
-        jenis: "S",
-        kendala: "Software Installation",
-        tglSelesai: "2025-10-13",
-        handler: "Reza",
-        rating: 5,
-        detail: "Installasi software accounting baru. Proses berjalan lancar, user sudah bisa menggunakan dengan baik."
-    }
-];
+// done_cancelled.js - PHP+AJAX VERSION
 
-const canceledData = [
-    {
-        id: 4,
-        peminta: "John Doe",
-        jenis: "S",
-        kendala: "Email Configuration",
-        tglDibatalkan: "2025-10-12",
-        handler: "-",
-        alasan: "Permintaan dibatalkan oleh user karena sudah dikerjakan sendiri",
-        detail: "User membatalkan permintaan konfigurasi email karena sudah berhasil mengkonfigurasi sendiri."
-    },
-    {
-        id: 5,
-        peminta: "John Doe",
-        jenis: "H",
-        kendala: "Monitor Issues",
-        tglDibatalkan: "2025-10-11",
-        handler: "Salman",
-        alasan: "Monitor ternyata hanya kabel yang longgar",
-        detail: "Setelah dicek, masalah hanya pada kabel monitor yang longgar. User memasang kembali sendiri."
-    }
-];
+// =========================
+// GLOBAL VARIABLES
+// =========================
+let currentTab = 'done';
+let doneTable = null;
+let canceledTable = null;
 
-// Initialize
+// =========================
+// DOM READY
+// =========================
 document.addEventListener('DOMContentLoaded', function() {
-    loadDoneData();
+    initDataTables();
+    initFilterToggle();
+    initFilters();
+    initModals();
+    initButtonActions();
+    setDefaultDates();
     
-    // Set initial tab
-    switchTab('done');
-    
-    // Add click event to nav home
-    document.querySelector('.nav-home').addEventListener('click', goToDashboard);
+    // Tab switching
+    document.getElementById('tab-done').addEventListener('click', () => switchTab('done'));
+    document.getElementById('tab-canceled').addEventListener('click', () => switchTab('canceled'));
 });
 
-// Tab switching function
+// =========================
+// DATATABLES INITIALIZATION
+// =========================
+function initDataTables() {
+    // Initialize Done Table
+    if ($('#doneTable').length) {
+        doneTable = $('#doneTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            order: [[5, 'desc']], // Sort by tanggal
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                zeroRecords: "Tidak ada data yang ditemukan",
+                info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                infoEmpty: "Tidak ada data",
+                infoFiltered: "(disaring dari _MAX_ total data)",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "›",
+                    previous: "‹"
+                }
+            },
+            columnDefs: [
+                { orderable: false, targets: [0, 7] }, // No dan Aksi tidak bisa di-sort
+                { className: 'dt-center', targets: [0, 4] }, // Center untuk No dan Urgensi
+                { responsivePriority: 1, targets: [1, 2, 3] } // Priority untuk kolom penting
+            ]
+        });
+    }
+    
+    // Initialize Canceled Table
+    if ($('#canceledTable').length) {
+        canceledTable = $('#canceledTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            order: [[5, 'desc']],
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                zeroRecords: "Tidak ada data yang ditemukan",
+                info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                infoEmpty: "Tidak ada data",
+                infoFiltered: "(disaring dari _MAX_ total data)",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "›",
+                    previous: "‹"
+                }
+            },
+            columnDefs: [
+                { orderable: false, targets: [0, 7] },
+                { className: 'dt-center', targets: [0, 4] },
+                { responsivePriority: 1, targets: [1, 2, 3] }
+            ]
+        });
+    }
+}
+
+// =========================
+// TAB SWITCHING
+// =========================
 function switchTab(tab) {
+    currentTab = tab;
+    
     const doneTab = document.getElementById('tab-done');
     const canceledTab = document.getElementById('tab-canceled');
-    const doneTable = document.getElementById('done-table');
-    const canceledTable = document.getElementById('canceled-table');
-    const emptyDone = document.getElementById('empty-done');
-    const emptyCanceled = document.getElementById('empty-canceled');
+    const doneContainer = document.getElementById('done-table');
+    const canceledContainer = document.getElementById('canceled-table');
     
-    // Update active tab
     if (tab === 'done') {
         doneTab.classList.add('active');
         canceledTab.classList.remove('active');
-        doneTable.style.display = 'block';
-        canceledTable.style.display = 'none';
+        doneContainer.style.display = 'block';
+        canceledContainer.style.display = 'none';
         
-        // Check if done data exists
-        if (doneData.length === 0) {
-            emptyDone.style.display = 'block';
-            doneTable.style.display = 'none';
-        } else {
-            emptyDone.style.display = 'none';
+        // Redraw table jika perlu
+        if (doneTable) {
+            setTimeout(() => doneTable.columns.adjust().responsive.recalc(), 100);
         }
-        emptyCanceled.style.display = 'none';
-        
     } else {
         doneTab.classList.remove('active');
         canceledTab.classList.add('active');
-        doneTable.style.display = 'none';
-        canceledTable.style.display = 'block';
+        doneContainer.style.display = 'none';
+        canceledContainer.style.display = 'block';
         
-        // Check if canceled data exists
-        if (canceledData.length === 0) {
-            emptyCanceled.style.display = 'block';
-            canceledTable.style.display = 'none';
-        } else {
-            emptyCanceled.style.display = 'none';
-        }
-        emptyDone.style.display = 'none';
-    }
-}
-
-// Load done data
-function loadDoneData() {
-    const tbody = document.getElementById('done-tbody');
-    tbody.innerHTML = '';
-    
-    doneData.forEach((item, index) => {
-        const row = document.createElement('tr');
-        const stars = getStarRating(item.rating);
-        
-        row.innerHTML = `
-            <td>${index + 1}.</td>
-            <td>${item.peminta}</td>
-            <td>${item.jenis}</td>
-            <td>${item.kendala}</td>
-            <td><span class="status-done">${formatDate(item.tglSelesai)}</span></td>
-            <td>${item.handler}</td>
-            <td>
-                <button class="detail-button" onclick="openDetailModal('done', ${item.id})">
-                    <i class="fas fa-eye"></i> Detail
-                </button>
-            </td>
-            <td class="rating">${stars}</td>
-        `;
-        
-        tbody.appendChild(row);
-    });
-    
-    // Load canceled data
-    loadCanceledData();
-}
-
-// Load canceled data
-function loadCanceledData() {
-    const tbody = document.getElementById('canceled-tbody');
-    tbody.innerHTML = '';
-    
-    canceledData.forEach((item, index) => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-            <td>${index + 1}.</td>
-            <td>${item.peminta}</td>
-            <td>${item.jenis}</td>
-            <td>${item.kendala}</td>
-            <td><span class="status-canceled">${formatDate(item.tglDibatalkan)}</span></td>
-            <td>${item.handler}</td>
-            <td>
-                <button class="detail-button" onclick="openDetailModal('canceled', ${item.id})">
-                    <i class="fas fa-eye"></i> Detail
-                </button>
-            </td>
-            <td>${item.alasan}</td>
-        `;
-        
-        tbody.appendChild(row);
-    });
-}
-
-// Get star rating HTML
-function getStarRating(rating) {
-    let stars = '';
-    for (let i = 1; i <= 5; i++) {
-        if (i <= rating) {
-            stars += '<i class="fas fa-star filled"></i>';
-        } else {
-            stars += '<i class="far fa-star"></i>';
+        if (canceledTable) {
+            setTimeout(() => canceledTable.columns.adjust().responsive.recalc(), 100);
         }
     }
-    return stars;
 }
 
-// Format date
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
+// =========================
+// FILTER TOGGLE
+// =========================
+function initFilterToggle() {
+    const btnToggleFilter = document.getElementById('btnToggleFilter');
+    const filterPanel = document.getElementById('filterPanel');
+    
+    if (btnToggleFilter && filterPanel) {
+        btnToggleFilter.addEventListener('click', function() {
+            filterPanel.classList.toggle('show');
+            this.innerHTML = filterPanel.classList.contains('show') 
+                ? 'Filter ▲' 
+                : 'Filter ▼';
+        });
+    }
+}
+
+// =========================
+// FILTER FUNCTIONS
+// =========================
+function initFilters() {
+    // Apply Filter
+    document.getElementById('btnApplyFilter')?.addEventListener('click', function() {
+        applyFilters();
+    });
+    
+    // Reset Filter
+    document.getElementById('btnResetFilter')?.addEventListener('click', function() {
+        resetFilters();
+    });
+    
+    // Enter key untuk filter date
+    document.querySelectorAll('#filterPanel input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
     });
 }
 
-// Open detail modal
-function openDetailModal(type, id) {
-    let data;
-    if (type === 'done') {
-        data = doneData.find(item => item.id === id);
-    } else {
-        data = canceledData.find(item => item.id === id);
+function applyFilters() {
+    const toko = document.getElementById('filter-toko').value.trim();
+    const peminta = document.getElementById('filter-peminta').value.trim();
+    const handler = document.getElementById('filter-handler').value.trim();
+    const startDate = document.getElementById('filter-start-date').value;
+    const endDate = document.getElementById('filter-end-date').value;
+    
+    // Apply ke tabel yang aktif
+    const table = currentTab === 'done' ? doneTable : canceledTable;
+    
+    if (table) {
+        table.columns().search(''); // Reset semua
+        
+        // Filter per kolom
+        if (toko) table.column(1).search(toko, true, false);
+        if (peminta) table.column(2).search(peminta, true, false);
+        if (handler) table.column(6).search(handler, true, false);
+        
+        // Filter tanggal (kolom 5)
+        if (startDate || endDate) {
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                const dateStr = data[5]; // Tanggal dalam format "01 Jan 2025 14:30"
+                const rowDate = parseCustomDate(dateStr);
+                
+                if (!rowDate) return true;
+                
+                if (startDate && rowDate < new Date(startDate)) return false;
+                if (endDate && rowDate > new Date(endDate + ' 23:59:59')) return false;
+                
+                return true;
+            });
+        }
+        
+        table.draw();
+        
+        // Hapus filter tanggal setelah draw
+        if (startDate || endDate) {
+            $.fn.dataTable.ext.search.pop();
+        }
+    }
+}
+
+function parseCustomDate(dateStr) {
+    // Parse format "01 Jan 2025 14:30"
+    const months = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+    };
+    
+    const parts = dateStr.split(' ');
+    if (parts.length >= 3) {
+        const day = parseInt(parts[0]);
+        const month = months[parts[1]];
+        const year = parseInt(parts[2]);
+        
+        let hour = 0, minute = 0;
+        if (parts.length > 3) {
+            const timeParts = parts[3].split(':');
+            hour = parseInt(timeParts[0]) || 0;
+            minute = parseInt(timeParts[1]) || 0;
+        }
+        
+        return new Date(year, month, day, hour, minute);
     }
     
-    if (!data) return;
+    return null;
+}
+
+function resetFilters() {
+    // Reset input values
+    document.getElementById('filter-toko').value = '';
+    document.getElementById('filter-peminta').value = '';
+    document.getElementById('filter-handler').value = '';
+    document.getElementById('filter-start-date').value = '';
+    document.getElementById('filter-end-date').value = '';
     
-    const modalBody = document.getElementById('modal-body');
-    
-    if (type === 'done') {
-        modalBody.innerHTML = `
-            <div class="detail-section">
-                <h4>Informasi Request</h4>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <strong>ID Request:</strong>
-                        <span>#${data.id}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Peminta:</strong>
-                        <span>${data.peminta}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Jenis Kendala:</strong>
-                        <span>${data.jenis === 'S' ? 'Software' : 'Hardware'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Deskripsi Kendala:</strong>
-                        <span>${data.kendala}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Tanggal Selesai:</strong>
-                        <span>${formatDate(data.tglSelesai)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Handler:</strong>
-                        <span>${data.handler}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Rating:</strong>
-                        <span class="rating">${getStarRating(data.rating)}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="detail-section">
-                <h4>Detail Penyelesaian</h4>
-                <div class="detail-content">
-                    ${data.detail}
-                </div>
-            </div>
-        `;
-    } else {
-        modalBody.innerHTML = `
-            <div class="detail-section">
-                <h4>Informasi Request</h4>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <strong>ID Request:</strong>
-                        <span>#${data.id}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Peminta:</strong>
-                        <span>${data.peminta}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Jenis Kendala:</strong>
-                        <span>${data.jenis === 'S' ? 'Software' : 'Hardware'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Deskripsi Kendala:</strong>
-                        <span>${data.kendala}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Tanggal Dibatalkan:</strong>
-                        <span>${formatDate(data.tglDibatalkan)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Handler:</strong>
-                        <span>${data.handler}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Alasan Pembatalan:</strong>
-                        <span>${data.alasan}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="detail-section">
-                <h4>Detail Pembatalan</h4>
-                <div class="detail-content">
-                    ${data.detail}
-                </div>
-            </div>
-        `;
+    // Reset tabel
+    const table = currentTab === 'done' ? doneTable : canceledTable;
+    if (table) {
+        table.columns().search('');
+        table.search('');
+        table.draw();
     }
+}
+
+// =========================
+// MODAL FUNCTIONS
+// =========================
+function initModals() {
+    // Close modal dengan klik di luar
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            closeModal(e.target.id);
+        }
+    });
+    
+    // Close modal dengan ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAllModals();
+        }
+    });
+    
+    // Close button
+    document.querySelectorAll('.close-btn, .btn-cancel').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                closeModal(modal.id);
+            }
+        });
+    });
+}
+
+function initButtonActions() {
+    // Event delegation untuk detail button
+    document.addEventListener('click', function(e) {
+        // Detail button
+        if (e.target.classList.contains('btn-detail') || 
+            e.target.closest('.btn-detail')) {
+            const button = e.target.classList.contains('btn-detail') 
+                ? e.target 
+                : e.target.closest('.btn-detail');
+            
+            const requestId = button.getAttribute('data-id');
+            if (requestId) {
+                openDetailModal(requestId);
+            }
+        }
+    });
+}
+
+// =========================
+// DETAIL MODAL WITH AJAX
+// =========================
+function openDetailModal(requestId) {
+    const modal = document.getElementById('detailModal');
+    const modalBody = document.getElementById('modalDetailBody');
+    
+    // Show loading
+    modalBody.innerHTML = `
+        <div class="loading-spinner" style="text-align: center; padding: 40px;">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p>Memuat data...</p>
+        </div>
+    `;
     
     // Show modal
-    const modal = document.getElementById('detailModal');
-    modal.style.display = 'flex';
-    setTimeout(() => {
-        modal.classList.add('active');
-    }, 10);
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    
+    // AJAX request
+    fetch(`ajax_get_detail.php?id=${requestId}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(result => {
+            if (result.success && result.data) {
+                const data = result.data;
+                modalBody.innerHTML = generateDetailHTML(data);
+            } else {
+                modalBody.innerHTML = `
+                    <div class="error-state" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-exclamation-triangle fa-2x" style="color: #e74c3c;"></i>
+                        <p>${result.error || 'Gagal memuat data'}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            modalBody.innerHTML = `
+                <div class="error-state" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-exclamation-triangle fa-2x" style="color: #e74c3c;"></i>
+                    <p>Terjadi kesalahan saat mengambil data</p>
+                    <small>${error.message}</small>
+                </div>
+            `;
+        });
 }
 
-// Close detail modal
-function closeDetailModal() {
-    const modal = document.getElementById('detailModal');
-    modal.classList.remove('active');
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
+function generateDetailHTML(data) {
+    // Tentukan class urgensi
+    let urgensiClass = '';
+    switch(data.level_urgensi) {
+        case 'Sangat Tinggi': urgensiClass = 'very-high'; break;
+        case 'Tinggi': urgensiClass = 'high'; break;
+        case 'Sedang': urgensiClass = 'medium'; break;
+        case 'Rendah': urgensiClass = 'low'; break;
+    }
+    
+    return `
+        <div class="field-grid">
+            <div class="field-item">
+                <label class="field-label">ID Request</label>
+                <input type="text" class="field-value" value="#${data.id}" readonly>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Status</label>
+                <input type="text" class="field-value status-value" value="${data.status_nama}" readonly>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Toko</label>
+                <input type="text" class="field-value" value="${data.user_toko || '-'}" readonly>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Peminta</label>
+                <input type="text" class="field-value" value="${data.peminta_nama || '-'}" readonly>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Email Peminta</label>
+                <input type="text" class="field-value" value="${data.peminta_email || '-'}" readonly>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Tanggal Request</label>
+                <input type="text" class="field-value" value="${data.created_at_formatted}" readonly>
+            </div>
+            
+            <div class="field-item full-width-field">
+                <div class="section-divider">Informasi Kendala</div>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Jenis Kendala</label>
+                <input type="text" class="field-value" value="${data.jenis_kendala || '-'}" readonly>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Level Urgensi</label>
+                <div class="field-value urgency-cell" style="padding: 5px;">
+                    <div class="urgency-card">
+                        <span class="urgency-code">${data.jenis || 'S'}</span>
+                        <span class="urgency-badge ${urgensiClass}">
+                            ${data.level_urgensi || 'Sedang'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field-item full-width-field">
+                <label class="field-label">Deskripsi Kendala</label>
+                <textarea class="field-value textarea-value" rows="4" readonly>${data.deskripsi_kendala || 'Tidak ada deskripsi'}</textarea>
+            </div>
+            
+            <div class="field-item full-width-field">
+                <div class="section-divider">Informasi Penyelesaian</div>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Handler</label>
+                <input type="text" class="field-value" value="${data.staff_nama || '-'}" readonly>
+            </div>
+            
+            <div class="field-item">
+                <label class="field-label">Tanggal ${data.status_nama}</label>
+                <input type="text" class="field-value" value="${data.status_timestamp_formatted}" readonly>
+            </div>
+            
+            <div class="field-item full-width-field">
+                <label class="field-label">Catatan Penyelesaian</label>
+                <textarea class="field-value textarea-value" rows="3" readonly>${data.catatan_penyelesaian || 'Tidak ada catatan'}</textarea>
+            </div>
+        </div>
+    `;
 }
 
-// Go back to dashboard
+// =========================
+// UTILITY FUNCTIONS
+// =========================
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal.show').forEach(modal => {
+        modal.classList.remove('show');
+    });
+    document.body.style.overflow = '';
+}
+
+function setDefaultDates() {
+    const today = new Date();
+    const lastWeek = new Date(today);
+    lastWeek.setDate(today.getDate() - 7);
+    
+    // Format YYYY-MM-DD
+    const formatDate = (date) => date.toISOString().split('T')[0];
+    
+    document.getElementById('filter-start-date').value = formatDate(lastWeek);
+    document.getElementById('filter-end-date').value = formatDate(today);
+}
+
+// =========================
+// NAVIGATION
+// =========================
 function goToDashboard() {
     window.location.href = 'home.php';
 }
 
-// Tambahkan CSS untuk detail content di dalam file CSS
-const detailCSS = `
-.detail-section {
-    margin-bottom: 25px;
-}
-
-.detail-section h4 {
-    color: var(--dark-gray);
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--third);
-}
-
-.detail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.detail-item strong {
-    color: var(--medium-gray);
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.detail-item span {
-    color: var(--dark-gray);
-    font-size: 1rem;
-}
-
-.detail-content {
-    background: var(--fourth);
-    padding: 20px;
-    border-radius: var(--radius-sm);
-    border-left: 4px solid var(--first);
-    color: var(--dark-gray);
-    line-height: 1.6;
-}
-`;
-
-// Add the CSS to the page
-const style = document.createElement('style');
-style.textContent = detailCSS;
-document.head.appendChild(style);
-
-// Close modal when clicking outside
-document.getElementById('detailModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeDetailModal();
+// =========================
+// RESPONSIVE FIX
+// =========================
+window.addEventListener('resize', function() {
+    if (doneTable) {
+        setTimeout(() => doneTable.columns.adjust().responsive.recalc(), 100);
     }
-});
-
-// Close modal with Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeDetailModal();
+    if (canceledTable) {
+        setTimeout(() => canceledTable.columns.adjust().responsive.recalc(), 100);
     }
 });
