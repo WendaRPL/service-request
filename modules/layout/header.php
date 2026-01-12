@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../direct/config.php';
+require_once __DIR__ . '/../../routines/function.php';
 ?>
 
 <body>
@@ -13,7 +14,7 @@ require_once __DIR__ . '/../../direct/config.php';
                 <button class="menu-toggle" id="menuToggle">☰</button>
             <?php endif; ?>
 
-            <span class="system-title">HOME</span>
+            <span class="system-title"><?= $page_title ?></span>
         </div>
 
         <div class="navbar-right">
@@ -42,31 +43,31 @@ require_once __DIR__ . '/../../direct/config.php';
                 <ul>
 
                     <?php if (can('enable')): ?>
-                        <li class="active">
+                        <li class="<?= isActivePage('home.php') ?>">
                             <a href="home.php">Dashboard</a>
                         </li>
                     <?php endif; ?>
 
                     <?php if (can('update_request')): ?>
-                        <li>
+                        <li class="<?= isActivePage('done_cancelled.php') ?>">
                             <a href="done_cancelled.php">Done &amp; Canceled</a>
                         </li>
                     <?php endif; ?>
 
                     <?php if (can('handling_request')): ?>
-                        <li>
+                        <li class="<?= isActivePage('reporting.php') ?>">
                             <a href="#">Reporting</a>
                         </li>
                     <?php endif; ?>
 
                     <?php if (can('update_toko') || can('update_role')): ?>
-                        <li>
+                        <li class="<?= isActivePage('master_data.php') ?>">
                             <a href="master_data.php">Master Data</a>
                         </li>
                     <?php endif; ?>
 
                     <?php if (can('manage_user')): ?>
-                        <li>
+                        <li class="<?= isActivePage('user_management.php') ?>">
                             <a href="user_management.php">User Management</a>
                         </li>
                     <?php endif; ?>
