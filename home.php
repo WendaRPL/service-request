@@ -49,14 +49,14 @@ ob_start();
     <aside class="sidebox">
 
         <?php if (can('input_request')): ?>
-        <div class="sidebar-box clickable-box" onclick="ajukanRequest('baru')">
+        <div class="sidebar-box request-box clickable-box" onclick="ajukanRequest('baru')">
             <h3>Ajukan Request</h3>
             <p>Laporkan Kendala pada Staff IT</p>
         </div>
         <?php endif; ?>
 
         <?php if (can('input_request')): ?>
-        <div class="sidebar-box clickable-box" onclick="lihatRiwayat()">
+        <div class="sidebar-box done-canceled-box clickable-box" onclick="lihatRiwayat()">
             <h3>Done & Canceled</h3>
             <p>Lihat riwayat request</p>
         </div>
@@ -76,17 +76,29 @@ ob_start();
             <p class="sort-info">Urut: Urgensi → Waktu</p>
 
             <div class="queue-items-container">
-                <?php foreach ($requests as $r): ?>
-                    <?php if ($r['status_kode'] === 'O'): ?>
-                        <div class="queue-item">
-                            <span>
-                                <?= htmlspecialchars($r['peminta']) ?>
-                                (<?= htmlspecialchars($r['level_urgensi']) ?>)
-                            </span>
-                            <button class="open-detail-btn">Open</button>
-                        </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+                <?php
+                $hasOpenQueue = false;
+                foreach ($requests as $r):
+                    if ($r['status_kode'] === 'O'):
+                        $hasOpenQueue = true;
+                ?>
+                    <div class="queue-item">
+                        <span>
+                            <?= htmlspecialchars($r['peminta']) ?>
+                            (<?= htmlspecialchars($r['level_urgensi']) ?>)
+                        </span>
+                        <button class="open-detail-btn">Open</button>
+                    </div>
+                <?php
+                    endif;
+                endforeach;
+                ?>
+
+                <?php if (!$hasOpenQueue): ?>
+                    <div class="open-empty" colspan="9" style="text-align:center;">
+                        <p>Tidak ada request Open saat ini</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
         <?php endif; ?>
@@ -118,8 +130,8 @@ ob_start();
 
                 <?php if (!$requests): ?>
                     <tr>
-                        <td colspan="9" style="text-align:center;">
-                            Tidak ada data
+                        <td class="queue-empty" colspan="9" style="text-align:center;">
+                            Tidak ada antrean request saat ini
                         </td>
                     </tr>
                 <?php endif; ?>
@@ -143,7 +155,7 @@ ob_start();
 
                         <!-- Action -->
                         <td>
-                            <?php if (can('cancel_request')): ?>
+                            <?php if (can('cancel_request') && $r['user_request'] == $_SESSION['user_id']): ?>
                                 <button class="btn-cancel">Cancel</button>
                             <?php endif; ?>
 
