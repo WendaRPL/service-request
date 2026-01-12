@@ -2,7 +2,7 @@
 :root {
     --first: #647AAD;
     --second: #7FA1C3;
-    --third: #E0E6F0;
+    --third: #E2DAD6;;
     --third-light: #F0F4FA;
     --fourth: #F5EDED;
     --white: #FFFFFF;
@@ -75,6 +75,7 @@
     position: relative;
     overflow: hidden;
     margin-bottom: 40px;
+    min-height: auto;
 }
 
 .content-area::before {
@@ -85,6 +86,17 @@
     right: 0;
     height: 4px;
     background: linear-gradient(90deg, var(--first), var(--second));
+}
+
+
+/* Hanya untuk staff yang punya sidebar */
+.is-staff .container {
+    margin-left: 260px; /* sidebar 250 + gap */
+}
+
+/* Ketika sidebar collapsed - smooth slide back */
+.is-staff.sidebar-collapsed .container {
+    margin-left: 30px;
 }
 
 .all-request-title {
@@ -207,7 +219,7 @@
 }
 
 .done-canceled-box {
-    border-left: 4px solid var(--success);
+    border-left: 4px solid #7AAD64;
 }
 
 .unrated-box {
@@ -257,6 +269,8 @@
     border-radius: var(--radius-sm);
     box-shadow: 0 4px 20px rgba(74, 92, 122, 0.1);
     border: 1px solid var(--third);
+    min-height: 400px;
+    max-height: 400px;
 }
 
 .request-table {

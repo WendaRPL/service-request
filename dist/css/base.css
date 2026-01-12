@@ -37,7 +37,6 @@
 }
 
 body {
-    background: var(--fourth);
     color: var(--dark-gray);
     min-height: 100vh;
     display: flex;
