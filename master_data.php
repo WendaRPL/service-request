@@ -306,20 +306,34 @@
                         <div class="field-grid">
                             <div class="field-item">
                                 <label class="field-label">Nama Role</label>
-                                <input
-                                    type="text"
-                                    id="editNamaRole"
-                                    class="field-value"
-                                >
+                                <input type="text" id="editNamaRole" class="field-value" placeholder="Masukkan nama role">
                             </div>
 
                             <div class="field-item full-width-field">
                                 <label class="field-label">List Of Keys</label>
-                                <div class="field-value" style="min-height:120px;">
-                                    <label><input type="checkbox"> Dashboard</label><br>
-                                    <label><input type="checkbox"> Master Data</label><br>
-                                    <label><input type="checkbox"> Service Request</label><br>
-                                    <label><input type="checkbox"> Report</label>
+                                <div class="custom-dropdown">
+                                    <div class="dropdown-header" onclick="toggleDropdown(this)">
+                                        <span>Pilih Keys...</span>
+                                        <i class="arrow-icon">▼</i>
+                                    </div>
+                                    <div class="dropdown-list" id="editKeyList">
+                                        <div class="key-item">
+                                            <label><input type="checkbox" class="key-checkbox" onchange="toggleKeyInput(this)"> Dashboard</label>
+                                            <input type="text" class="key-value-input" placeholder="Value..." style="display:none;">
+                                        </div>
+                                        <div class="key-item">
+                                            <label><input type="checkbox" class="key-checkbox" onchange="toggleKeyInput(this)"> Master Data</label>
+                                            <input type="text" class="key-value-input" placeholder="Value..." style="display:none;">
+                                        </div>
+                                        <div class="key-item">
+                                            <label><input type="checkbox" class="key-checkbox" onchange="toggleKeyInput(this)"> Service Request</label>
+                                            <input type="text" class="key-value-input" placeholder="Value..." style="display:none;">
+                                        </div>
+                                        <div class="key-item">
+                                            <label><input type="checkbox" class="key-checkbox" onchange="toggleKeyInput(this)"> Report</label>
+                                            <input type="text" class="key-value-input" placeholder="Value..." style="display:none;">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

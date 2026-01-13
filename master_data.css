@@ -1301,6 +1301,15 @@ table.dataTable tbody td:last-child  {
     border-radius: 4px;
     font-size: 0.8rem;
 }
+.arrow-icon {
+    font-style: normal;
+    font-size: 10px;
+    transition: transform 0.3s;
+}
+
+.dropdown-list.show + .dropdown-header .arrow-icon {
+    transform: rotate(180deg);
+}
 
 @media (max-width: 768px) {
 
