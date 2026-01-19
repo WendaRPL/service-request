@@ -1,126 +1,142 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // 1. SELECTOR MODAL & TOMBOL (Sesuai HTML Kamu)
-    const modal = document.getElementById('addUserModal');
-    const btnOpen = document.querySelector('.add-user'); // Tombol + Add User
-    const btnClose = document.querySelector('.close-btn[data-modal="addUserModal"]');  
+
+    const addModal  = document.getElementById('addUserModal');
     const editModal = document.getElementById('editUserModal');
-    
-    // FUNGSI BUKA MODAL
-    if (btnOpen) {
-        btnOpen.onclick = function () {
-            modal.classList.add('show');
-        }
-    }
+    const userContainer = document.getElementById('userContainer');
 
-    // FUNGSI TUTUP MODAL (Tombol X)
-    if (btnClose) {
-        btnClose.onclick = function () {
-            modal.classList.remove('show');
-        }
-    }
+    // LOAD ROLES
+    function loadRoles() {
+        $.getJSON('direct/get_roles.php', res => {
+            const addSelect  = document.getElementById('add-role');
+            const editSelect = document.getElementById('edit-role');
 
-    // FUNGSI TUTUP MODAL (Klik Area Gelap)
-    window.onclick = function (event) {
-        if (event.target === modal) {
-            modal.classList.remove('show');
-        }
-    }
+            addSelect.innerHTML  = '<option value="">-- Pilih Role --</option>';
+            editSelect.innerHTML = '<option value="">-- Pilih Role --</option>';
 
-    // FUNGSI TUTUP MODAL (Klik Tombol Cancel)
-    const btnCancelList = document.querySelectorAll('.btn-cancel');
-
-    btnCancelList.forEach(btn => {
-        btn.addEventListener('click', function () {
-            modal.classList.remove('show');
+            res.forEach(r => {
+                addSelect.innerHTML  += `<option value="${r.id}">${r.text}</option>`;
+                editSelect.innerHTML += `<option value="${r.id}">${r.text}</option>`;
+            });
         });
-    });
+    }
 
-    // 2. LOGIKA ACCORDION (Buka Tutup Detail User)
-    // Mencari semua header accordion di dalam list user
-    const accordionHeaders = document.querySelectorAll('.accordion-header');
+    // LOAD USERS
+    function loadUsers() {
+        userContainer.innerHTML = '<p style="padding:20px">Loading users...</p>';
+        $.getJSON('direct/get_users.php', users => {
+            if (!users.length) {
+                userContainer.innerHTML = '<p style="padding:20px">Belum ada user</p>';
+                return;
+            }
 
-    accordionHeaders.forEach(header => {
-        header.addEventListener('click', function() {
-            // Ambil parent-nya (.accordion-item)
-            const item = this.parentElement;
-            
-            // Cek apakah item ini sudah terbuka
-            const isOpen = item.classList.contains('active');
-
-            // TUTUP SEMUA ACCORDION LAIN  
-            document.querySelectorAll('.accordion-item').forEach(otherItem => {
-                otherItem.classList.remove('active');
+            userContainer.innerHTML = '';
+            users.forEach(u => {
+                const last = new Date(u.created_at).toLocaleString('id-ID');
+                userContainer.innerHTML += `
+                <div class="accordion-item" data-id="${u.id}" data-username="${u.username}" data-role="${u.role_id}">
+                    <button class="accordion-header">
+                        <span class="user-title">${u.username} — ${u.role_name}</span>
+                        <span class="icon">⌄</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p><strong>Username:</strong> ${u.username}</p>
+                            <p><strong>Role:</strong> ${u.role_name}</p>
+                            <p><strong>Last Modified:</strong> ${u.created}</p>
+                            <div class="actions">
+                                <button class="action-btn edit-btn">Edit</button>
+                                <button class="action-btn delete-btn">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
             });
 
-            // Jika sebelumnya tertutup, maka buka. Jika sudah terbuka, maka tutup.
-            if (!isOpen) {
-                item.classList.add('active');
-            }
+            bindAccordion();
+            bindEdit();
+            bindDelete();
         });
-    });
-
-    // 3. LOGIKA TOMBOL "FOREVER"
-    const btnForever = document.querySelector('.btn-forever');
-    const inputDate = document.querySelector('input[name="expiration_date"]');
-
-    if (btnForever && inputDate) {
-        btnForever.onclick = function(e) {
-            e.preventDefault(); // Mencegah form submit/refresh
-            inputDate.value = "2099-12-31"; // Set tanggal jauh ke depan
-        }
     }
 
-    // OPEN EDIT MODAL
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-
-            // contoh ambil data dari accordion (dummy dulu)
-            const accordionBody = this.closest('.accordion-body');
-
-            const username = accordionBody.querySelector('p:nth-child(1)').innerText.split(': ')[1];
-            const role = accordionBody.querySelector('p:nth-child(2)').innerText.split(': ')[1];
-            const status = accordionBody.querySelector('p:nth-child(3)').innerText.includes('Active');
-            const lastModified = accordionBody.querySelector('p:nth-child(4)').innerText.split(': ')[1];
-
-            // SET VALUE KE FORM
-            document.getElementById('edit-username').value = username;
-            document.getElementById('edit-role').value = role.toLowerCase().replace(' ', '_');
-            document.getElementById('edit-enable').checked = status;
-
-            // reset password
-            document.getElementById('edit-password').value = '';
-            document.getElementById('edit-retype-password').value = '';
-
-            editModal.classList.add('show');
+    function bindAccordion() {
+        document.querySelectorAll('.accordion-header').forEach(h => {
+            h.onclick = () => {
+                const item = h.closest('.accordion-item');
+                const open = item.classList.contains('active');
+                document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
+                if (!open) item.classList.add('active');
+            };
         });
+    }
+
+    // ADD USER
+    document.querySelector('.add-user')?.addEventListener('click', () => addModal.classList.add('show'));
+    document.getElementById('btn-save-user')?.addEventListener('click', () => {
+        $.post('direct/add_user.php', {
+            username: $('#add-username').val(),
+            password: $('#add-password').val(),
+            retype_password: $('#add-retype').val(),
+            role: $('#add-role').val()
+        }, res => {
+            alert(res.message);
+            if (res.status) {
+                addModal.classList.remove('show');
+                loadUsers();
+            }
+        }, 'json');
     });
+
+    // EDIT USER
+    function bindEdit() {
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.onclick = () => {
+                const item = btn.closest('.accordion-item');
+                $('#edit-id').val(item.dataset.id);
+                $('#edit-username').val(item.dataset.username);
+                $('#edit-role').val(item.dataset.role); // auto pick previous role
+                $('#edit-password').val('');
+                $('#edit-retype').val('');
+                editModal.classList.add('show');
+            };
+        });
+    }
+
+    document.getElementById('btn-update-user')?.addEventListener('click', () => {
+        $.post('direct/edit_user.php', {
+            id: parseInt($('#edit-id').val(), 10),
+            username: $('#edit-username').val(),
+            password: $('#edit-password').val(),
+            retype_password: $('#edit-retype').val(),
+            role: parseInt($('#edit-role').val(), 10)
+        }, res => {
+            alert(res.message);
+            if (res.status) {
+                editModal.classList.remove('show');
+                loadUsers();
+            }
+        }, 'json');
+    });
+
+    // DELETE USER
+    function bindDelete() {
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.onclick = () => {
+                const id = parseInt(btn.closest('.accordion-item').dataset.id, 10);
+                if (!confirm('Yakin hapus user ini?')) return;
+                $.post('direct/delete_user.php', { id }, res => {
+                    alert(res.message);
+                    if (res.status) loadUsers();
+                }, 'json');
+            };
+        });
+    }
 
     // CLOSE MODAL
-    document.querySelectorAll('[data-modal="editUserModal"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            editModal.classList.remove('show');
-        });
+    document.querySelectorAll('.close-btn').forEach(b => {
+        b.onclick = () => document.getElementById(b.dataset.modal)?.classList.remove('show');
     });
 
-    // CLICK OUTSIDE
-    window.addEventListener('click', e => {
-        if (e.target === editModal) {
-            editModal.classList.remove('show');
-        }
-    });
-
-    // FOREVER BUTTON
-    document.getElementById('edit-forever').addEventListener('click', () => {
-        document.getElementById('edit-expiration').value = '2099-12-31';
-    });
-
-    // UPDATE USER
-    document.getElementById('btn-update-user').addEventListener('click', () => {
-        alert('User berhasil diupdate (dummy)');
-        editModal.classList.remove('show');
-    });
-
+    // INIT
+    loadRoles();
+    loadUsers();
 });
-
- 
