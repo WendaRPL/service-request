@@ -1,81 +1,54 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
-    <link rel="stylesheet" href="dist/css/master_data.css">
-    <link rel="stylesheet" href="dist/css/sidebar.css">
-    <link rel="stylesheet" href="dist/css/navbar.css">
-    <link rel="stylesheet" href="dist/css/base.css">
-</head>
-<body>
-    <div class="container">
-        <!-- disini navbar dan sidebar -->
-        <header class="navbar">
-            <div class="navbar-left">
-                <span class="staff-label">STAFF IT</span>
-                <button class="menu-toggle">☰</button>
-                <span class="system-title">SERVICE REQUEST SYSTEM</span>
-            </div>
-            <div class="navbar-right">
-                <span class="username">Username</span>
-                <div class="user-icon">👤</div>
-            </div>
-        </header>
-        <aside class="sidebar">
-            <nav>
-                <ul>
-                    <li><a href="dashboard_staffit.php" data-page="dashboard">Dashboard</a></li>
-                    <li><a href="done_canceled.php" data-page="done-canceled">Done & Canceled</a></li>
-                    <li><a href="reporting.php" data-page="reporting">Reporting</a></li>
-                    <li class="active"><a href="master_data.php" data-page="master-data">Master Data</a></li>
-                    <li><a href="user_management.php" data-page="user-management">User Management</a></li>
-                </ul>
-            </nav>
-        </aside>
+<?php
+require_once "direct/config.php";
 
-        <!-- main content isi disini -->
-        <main class="dashboard-content">
-            <h1>MASTER DATA</h1>
-            
-            <button class="action-button add-button" id="btnAddMaster">
-                + Add Data
-            </button>
+$pageTitle = "Master Data";
+ob_start();
+?>
 
-            <div class="master-data-container">
-                <div class="master-data-card">
-                    <div class="tabs-nav">
-                        <button class="tab-button active">Toko</button>
-                        <button class="tab-button">Karyawan</button>
-                        <button class="tab-button">Jenis Kendala</button>
-                        <button class="tab-button">Role</button>
-                    </div>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="dist/css/master_data.css">
 
-                    <div class="tab-content active">
-                        <div class="table-container">
-                            <!-- Table akan di-generate oleh JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+<div class="container">
+    <main class="dashboard-content">
 
-    <!-- MODAL ADD -->
-    <div id="addMasterModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" data-modal="addMasterModal">&times;</span>
+        <button class="action-button add-button" id="btnAddMaster">
+            + Add Data
+        </button>
 
-            <div class="modal-detail">
-                <!-- HEADER -->
-                <div class="modal-header">
-                    <h2 id="addMasterTitle">Tambah Data</h2>
+        <div class="master-data-container">
+            <div class="master-data-card">
+                <div class="tabs-nav">
+                    <button class="tab-button active" data-tab="toko">Toko</button>
+                    <button class="tab-button" data-tab="karyawan">Karyawan</button>
+                    <button class="tab-button" data-tab="jenis_kendala">Jenis Kendala</button>
+                    <button class="tab-button" data-tab="role">Role</button>
                 </div>
 
-                <!-- BODY -->
-                <div class="modal-body">
+                <div class="tab-content active">
+                    <div class="table-container"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- =========================
+    MODAL ADD MASTER DATA
+========================= -->
+<div id="addMasterModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+
+        <div class="modal-detail">
+            <div class="modal-header">
+                <h2 id="addMasterTitle">Tambah Data</h2>
+            </div>
+
+            <div class="modal-body">
+                <form id="mainAddForm">
+
                     <!-- =========================
                         TOKO
                     ========================== -->
@@ -83,12 +56,11 @@
                         <div class="field-grid">
                             <div class="field-item">
                                 <label class="field-label">Nama Toko</label>
-                                <input type="text" class="field-value" placeholder="Masukkan nama toko">
+                                <input type="text" id="addNamaToko" class="field-value">
                             </div>
-
                             <div class="field-item">
                                 <label class="field-label">Kode Toko</label>
-                                <input type="text" class="field-value" placeholder="Masukkan kode toko">
+                                <input type="text" id="addKodeToko" class="field-value">
                             </div>
                         </div>
                     </div>
@@ -100,16 +72,11 @@
                         <div class="field-grid">
                             <div class="field-item">
                                 <label class="field-label">Nama Karyawan</label>
-                                <input type="text" class="field-value" placeholder="Masukkan nama karyawan">
+                                <input type="text" id="addNamaKaryawan" class="field-value">
                             </div>
-
                             <div class="field-item">
                                 <label class="field-label">Toko</label>
-                                <select class="field-value">
-                                    <option>-- Pilih Toko --</option>
-                                    <option>Toko A</option>
-                                    <option>Toko B</option>
-                                </select>
+                                <select id="addTokoKaryawan" class="field-value"></select>
                             </div>
                         </div>
                     </div>
@@ -121,79 +88,111 @@
                         <div class="field-grid">
                             <div class="field-item">
                                 <label class="field-label">Tipe Kendala</label>
-                                <select class="field-value">
-                                    <option>-- Pilih --</option>
-                                    <option>Software</option>
-                                    <option>Hardware</option>
+                                <select id="addTipeKendala" class="field-value">
+                                    <option value="">-- Pilih --</option>
+                                    <option value="Software">Software</option>
+                                    <option value="Hardware">Hardware</option>
                                 </select>
                             </div>
-
                             <div class="field-item">
                                 <label class="field-label">Jenis Kendala</label>
-                                <input type="text" class="field-value" placeholder="Masukkan jenis kendala">
+                                <input type="text" id="addJenisKendala" class="field-value">
                             </div>
-
                             <div class="field-item">
-                                <label class="field-label">Mempunyai Pertanyaan Turunan</label>
-                                <div style="display:flex; gap:20px; padding-top:8px;">
-                                    <label><input type="radio" name="turunan"> Ya</label>
-                                    <label><input type="radio" name="turunan"> Tidak</label>
-                                </div>
+                                <label class="field-label">Pertanyaan Turunan</label>
+                                <label><input type="radio" name="addTurunan" value="Ya"> Ya</label>
+                                <label><input type="radio" name="addTurunan" value="Tidak" checked> Tidak</label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- =========================
-                        ROLE
-                    ========================== -->
-                    <div class="master-form" id="formRole" style="display:none;">
-                        <div class="field-grid">
-                            <div class="field-item">
-                                <label class="field-label">Nama Role</label>
-                                <input type="text" class="field-value" placeholder="Masukkan nama role">
-                            </div>
+<!-- =========================
+ROLE MODAL (Full Fixed)
+========================= -->
+<div class="master-form" id="formRole" style="display:none;">
+    <div class="field-grid">
 
-                            <div class="field-item full-width-field">
-                                <label class="field-label">List Of Keys</label>
-                                <div class="custom-dropdown">
-                                    <div class="dropdown-header" onclick="toggleDropdown(this)">
-                                        <span>Pilih Keys...</span>
-                                        <i class="arrow-icon">▼</i>
-                                    </div>
-                                    <div class="dropdown-list">
-                                        <div class="key-item">
-                                            <label><input type="checkbox" onchange="toggleKeyInput(this)"> Dashboard</label>
-                                            <input type="text" class="key-value-input" placeholder="Value...">
-                                        </div>
-                                        <div class="key-item">
-                                            <label><input type="checkbox" onchange="toggleKeyInput(this)"> Master Data</label>
-                                            <input type="text" class="key-value-input" placeholder="Value...">
-                                        </div>
-                                        <div class="key-item">
-                                            <label><input type="checkbox" onchange="toggleKeyInput(this)"> Service Request</label>
-                                            <input type="text" class="key-value-input" placeholder="Value...">
-                                        </div>
-                                        <div class="key-item">
-                                            <label><input type="checkbox" onchange="toggleKeyInput(this)"> Report</label>
-                                            <input type="text" class="key-value-input" placeholder="Value...">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Nama Role -->
+        <div class="field-item">
+            <label class="field-label">Nama Role</label>
+            <input type="text" id="addNamaRole" class="field-value">
+        </div>
+
+        <!-- Permissions -->
+        <div class="field-item full-width-field">
+            <label class="field-label">Permissions</label>
+
+            <!-- BOOLEAN -->
+            <div class="key-group">
+                <strong>Boolean Permission</strong><br><br>
+                <label class="key-row">
+                    <input type="checkbox" name="roleBoolKeys[]" value="enable"> Enable
+                </label>
+                <label class="key-row">
+                    <input type="checkbox" name="roleBoolKeys[]" value="update_toko"> Update Toko
+                </label>
+                <label class="key-row">
+                    <input type="checkbox" name="roleBoolKeys[]" value="update_role"> Update Role
+                </label>
+                <label class="key-row">
+                    <input type="checkbox" name="roleBoolKeys[]" value="handling_request"> Handling Request
+                </label>
+            </div>
+
+            <hr>
+
+            <!-- STRING KEYS (Multi-dropdown) -->
+            <?php
+            $stringKeys = [
+                'manage_user' => 'Manage User',
+                'update_user_toko' => 'Update User (By Toko)',
+                'input_request' => 'Input Request',
+                'cancel_request' => 'Cancel Request',
+                'update_request' => 'Update Request',
+                'delete_request' => 'Delete Request'
+            ];
+            foreach ($stringKeys as $key => $label): ?>
+            <div class="key-group">
+                <label class="key-row">
+                    <input type="checkbox" id="key_<?= $key ?>" data-target="value_<?= $key ?>">
+                    <?= $label ?>
+                </label>
+                <div class="key-value-wrapper disabled" id="value_<?= $key ?>">
+                    <div class="multi-dropdown">
+                        <div class="dropdown-header">Pilih Toko</div>
+                        <div class="dropdown-list" id="<?= $key ?>TokoList">
+                            <!-- DIISI VIA AJAX -->
                         </div>
                     </div>
-
+                    <small class="hint-text">Bisa pilih lebih dari satu toko</small>
                 </div>
+            </div>
+            <hr>
+            <?php endforeach; ?>
 
-                <!-- ACTION -->
-                <div class="modal-actions">
-                    <button class="btn-submit">Tambahkan</button>
-                </div>
+            <!-- EXPIRATION -->
+            <div class="key-group">
+                <strong>Expiration Date</strong><br><br>
+                <label class="key-row">
+                    <input type="checkbox" id="roleForever"> Forever
+                </label>
+                <input type="datetime-local" id="roleExpirationDate" class="field-value">
             </div>
         </div>
     </div>
+</div>
+</form>
+    <!-- Footer Buttons -->
+    <div class="modal-action">
+        <button type="button" class="btn-submit" id="btnSaveMaster">Save</button>
+        <button type="button" class="btn-cancel" id="btnCancelMaster">Cancel</button>
+    </div>
+</div>
+</div>
+</div>
+</div>
 
-    <!-- =========================
+<!-- =========================
      MODAL EDIT MASTER DATA
     ========================== -->
     <div id="editModal" class="modal">
@@ -299,62 +298,129 @@
                         </div>
                     </div>
 
-                    <!-- =========================
-                        EDIT : ROLE
-                    ========================== -->
-                    <div class="master-form" id="editFormRole" style="display:none;">
-                        <div class="field-grid">
-                            <div class="field-item">
-                                <label class="field-label">Nama Role</label>
-                                <input type="text" id="editNamaRole" class="field-value" placeholder="Masukkan nama role">
-                            </div>
+<!-- =========================
+     EDIT : ROLE
+========================= -->
+<div class="master-form" id="editFormRole" style="display:none;">
+    <div class="field-grid">
 
-                            <div class="field-item full-width-field">
-                                <label class="field-label">List Of Keys</label>
-                                <div class="custom-dropdown">
-                                    <div class="dropdown-header" onclick="toggleDropdown(this)">
-                                        <span>Pilih Keys...</span>
-                                        <i class="arrow-icon">▼</i>
-                                    </div>
-                                    <div class="dropdown-list" id="editKeyList">
-                                        <div class="key-item">
-                                            <label><input type="checkbox" class="key-checkbox" onchange="toggleKeyInput(this)"> Dashboard</label>
-                                            <input type="text" class="key-value-input" placeholder="Value..." style="display:none;">
-                                        </div>
-                                        <div class="key-item">
-                                            <label><input type="checkbox" class="key-checkbox" onchange="toggleKeyInput(this)"> Master Data</label>
-                                            <input type="text" class="key-value-input" placeholder="Value..." style="display:none;">
-                                        </div>
-                                        <div class="key-item">
-                                            <label><input type="checkbox" class="key-checkbox" onchange="toggleKeyInput(this)"> Service Request</label>
-                                            <input type="text" class="key-value-input" placeholder="Value..." style="display:none;">
-                                        </div>
-                                        <div class="key-item">
-                                            <label><input type="checkbox" class="key-checkbox" onchange="toggleKeyInput(this)"> Report</label>
-                                            <input type="text" class="key-value-input" placeholder="Value..." style="display:none;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Nama Role -->
+        <div class="field-item">
+            <label class="field-label">Nama Role</label>
+            <input type="text" id="editNamaRole" class="field-value">
+        </div>
+
+        <!-- Permissions -->
+        <div class="field-item full-width-field">
+            <label class="field-label">Permissions</label>
+
+            <!-- BOOLEAN PERMISSION -->
+            <div class="key-group">
+                <strong>Boolean Permission</strong><br><br>
+
+                <label class="key-row">
+                    <input type="checkbox"
+                           id="edit_key_enable"
+                           name="roleBoolKeys[]"
+                           value="enable">
+                    Enable
+                </label>
+
+                <label class="key-row">
+                    <input type="checkbox"
+                           id="edit_key_update_toko"
+                           name="roleBoolKeys[]"
+                           value="update_toko">
+                    Update Toko
+                </label>
+
+                <label class="key-row">
+                    <input type="checkbox"
+                           id="edit_key_update_role"
+                           name="roleBoolKeys[]"
+                           value="update_role">
+                    Update Role
+                </label>
+
+                <label class="key-row">
+                    <input type="checkbox"
+                           id="edit_key_handling_request"
+                           name="roleBoolKeys[]"
+                           value="handling_request">
+                    Handling Request
+                </label>
+            </div>
+
+            <hr>
+
+            <!-- STRING PERMISSION -->
+            <?php
+            $stringKeys = [
+                'manage_user' => 'Manage User',
+                'update_user_toko' => 'Update User (By Toko)',
+                'input_request' => 'Input Request',
+                'cancel_request' => 'Cancel Request',
+                'update_request' => 'Update Request',
+                'delete_request' => 'Delete Request'
+            ];
+            foreach ($stringKeys as $key => $label): ?>
+            <div class="key-group">
+
+                <label class="key-row">
+                    <input type="checkbox"
+                           id="edit_key_<?= $key ?>">
+                    <?= $label ?>
+                </label>
+
+                <div class="key-value-wrapper disabled"
+                     id="edit_value_<?= $key ?>">
+
+                    <div class="multi-dropdown">
+                        <div class="dropdown-header">Pilih Toko</div>
+                        <div class="dropdown-list"
+                             id="edit_<?= $key ?>TokoList">
                         </div>
                     </div>
 
-                </div>
-
-                <!-- ACTION -->
-                <div class="modal-actions">
-                    <button class="btn-submit" onclick="updateData()">Update</button>
+                    <small class="hint-text">
+                        Bisa pilih lebih dari satu toko
+                    </small>
                 </div>
             </div>
+            <hr>
+            <?php endforeach; ?>
+
+            <!-- EXPIRATION -->
+            <div class="key-group">
+                <strong>Expiration Date</strong><br><br>
+
+                <label class="key-row">
+                    <input type="checkbox" id="editRoleForever">
+                    Forever
+                </label>
+
+                <input type="datetime-local"
+                       id="editRoleExpirationDate"
+                       class="field-value">
+            </div>
+
         </div>
     </div>
+</div>
 
-        
-    <script src="dist/js/master_data.js"></script>
-    <script src="dist/js/sidebar.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    
-</body>
-</html>
+<!-- ACTION -->
+<div class="modal-actions">
+    <button class="btn-submit" onclick="updateData()">Update</button>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="dist/js/master_data.js"></script>
+
+<?php
+$content = ob_get_clean();
+require_once "modules/layout/template.php";
+?>
