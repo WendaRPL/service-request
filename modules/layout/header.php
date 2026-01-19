@@ -66,7 +66,8 @@ require_once __DIR__ . '/../../routines/function.php';
                         </li>
                     <?php endif; ?>
 
-                    <?php if (can('manage_user')): ?>
+                    <!-- Kita cek: apakah dia punya key 'manage_user' DAN isinya adalah 'all' -->
+                    <?php if (permission('manage_user') === 'all'): ?>
                         <li class="<?= isActivePage('user_management.php') ?>">
                             <a href="user_management.php">User Management</a>
                         </li>
