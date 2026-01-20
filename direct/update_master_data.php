@@ -26,8 +26,14 @@ switch ($tab) {
         exit;
 
     case 'karyawan':
+        // Ambil nama dari 'username' dan toko dari 'user_toko' sesuai payload JS
+        $namaKaryawan = $_POST['username'] ?? ''; 
+        $userToko = $_POST['user_toko'] ?? ''; 
+
+        // Gunakan "ssi" agar user_toko dibaca sebagai STRING (bukan integer)
         $stmt = $conn->prepare("UPDATE master_karyawan SET username=?, user_toko=? WHERE id=?");
-        $stmt->bind_param("sii", $_POST['nama'], $_POST['toko'], $id);
+        $stmt->bind_param("ssi", $namaKaryawan, $userToko, $id);
+        
         $stmt->execute();
         echo "OK";
         exit;
@@ -40,8 +46,8 @@ switch ($tab) {
         echo "OK";
         exit;
 
-case 'role':
-$roleName = trim($_POST['nama'] ?? '');
+    case 'role':
+    $roleName = trim($_POST['nama'] ?? '');
         if ($roleName === '') {
             http_response_code(400);
             exit('Role name required');

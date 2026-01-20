@@ -28,11 +28,18 @@ switch ($tab) {
         exit;
 
     case 'karyawan':
-        $stmt = $conn->prepare("
-            INSERT INTO master_karyawan (username, user_toko, created_at, created_by)
-            VALUES (?, ?, NOW(), ?)
-        ");
-        $stmt->bind_param("sii", $_POST['nama'], $_POST['toko'], $createdBy);
+        $userId   = $_POST['user_id'] ?? null;
+        $username = $_POST['username'] ?? '';
+        $userToko = $_POST['user_toko'] ?? ''; // Menangkap string "1,2,5" dari JS
+
+        if (!$userId) {
+            http_response_code(400);
+            exit('User ID harus ada!');
+        }
+
+        // Gunakan bind_param "issi" (integer, string, string, integer)
+        $stmt = $conn->prepare("INSERT INTO master_karyawan (user_id, username, user_toko, created_at, created_by) VALUES (?, ?, ?, NOW(), ?)");
+        $stmt->bind_param("issi", $userId, $username, $userToko, $createdBy);
         $stmt->execute();
         echo "OK";
         exit;

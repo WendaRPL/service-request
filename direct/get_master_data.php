@@ -46,23 +46,46 @@ switch ($tab) {
         break;
 
     case 'karyawan':
-        // Filter karyawan berdasarkan toko tempat dia bernaung
-        $filter = getStoreFilterSQL('t.kode_toko', $manage_permission);
-        $sql = "
-            SELECT 
-                k.id,
-                k.username AS nama,
-                COALESCE(t.nama_toko, '-') AS toko,
-                k.created_at AS tanggal,
-                COALESCE(u.username, 'System') AS dibuat_oleh
-            FROM master_karyawan k
-            LEFT JOIN master_toko t ON t.id = k.user_toko
-            LEFT JOIN users u ON u.id = k.created_by
-            WHERE $filter
-            ORDER BY k.username ASC
-        ";
-        break;
+        // Gunakan LEFT JOIN ke tabel users kalau perlu, 
+        // tapi kalau username sudah ada di master_karyawan, pakai ini:
+        $sql = "SELECT * FROM master_karyawan ORDER BY id DESC";
+        $res = $conn->query($sql);
+        
+        if (!$res) {
+            die("Error Query: " . $conn->error); // Biar ketauan kalau SQL-nya salah
+        }
 
+        $data = [];
+        while ($row = $res->fetch_assoc()) {
+            $tokoIds = $row['user_toko'] ?? ''; 
+            $tokoNames = [];
+            
+            if (!empty($tokoIds)) {
+                // explode memecah string jadi array [1, 2]
+                $idArray = explode(',', $tokoIds); 
+                
+                // Lalu kita bersihkan biar beneran integer
+                $cleanIds = implode(',', array_map('intval', $idArray)); 
+                
+                $qToko = $conn->query("SELECT nama_toko FROM master_toko WHERE id IN ($cleanIds)");
+                
+                    if ($qToko) {
+                        while ($t = $qToko->fetch_assoc()) {
+                            $tokoNames[] = $t['nama_toko'];
+                        }
+                    }
+                }
+
+            $data[] = [
+                'id'        => $row['id'],
+                'username'  => $row['username'] ?? 'No Name',
+                'toko_text' => !empty($tokoNames) ? implode(', ', $tokoNames) : '-',
+                'created_at'=> isset($row['created_at']) ? date('d M Y', strtotime($row['created_at'])) : '-'
+            ];
+        }
+        echo json_encode($data);
+        exit;
+        
     case 'jenis_kendala':
      if (can('handling_request')) {
         $sql = "
