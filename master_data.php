@@ -70,16 +70,25 @@ ob_start();
                     ========================== -->
                     <div class="master-form" id="formKaryawan" style="display:none;">
                         <div class="field-grid">
-                            <div class="field-item">
-                                <label class="field-label">Nama Karyawan</label>
-                                <input type="text" id="addNamaKaryawan" class="field-value">
+                            <div class="field-item full-width-field" style="position: relative;">
+                                <label class="field-label">Cari & Pilih Akun User</label>
+                                <input type="text" id="searchUserKaryawan" class="field-value" placeholder="Ketik nama atau username..." autocomplete="off">
+                                
+                                <input type="hidden" id="addUserKaryawan">     <input type="hidden" id="addUsernameKaryawan"> <div id="userSearchResults" class="live-search-results"></div>
                             </div>
-                            <div class="field-item">
-                                <label class="field-label">Toko</label>
-                                <select id="addTokoKaryawan" class="field-value"></select>
+
+                            <div class="field-item full-width-field">
+                                <label class="field-label">Penempatan Toko</label>
+                                <div class="multi-dropdown" id="addKaryawanTokoDropdown">
+                                    <div class="dropdown-header">Pilih Toko...</div>
+                                    <div class="dropdown-list" id="addKaryawanTokoList">
+                                        </div>
+                                </div>
+                                <small class="hint-text">Ceklis satu atau lebih toko.</small>
                             </div>
                         </div>
                     </div>
+
 
                     <!-- =========================
                         JENIS KENDALA
@@ -242,20 +251,17 @@ ROLE MODAL (Full Fixed)
                         <div class="field-grid">
                             <div class="field-item">
                                 <label class="field-label">Nama Karyawan</label>
-                                <input
-                                    type="text"
-                                    id="editNamaKaryawan"
-                                    class="field-value"
-                                >
+                                <input type="text" id="editNamaKaryawan" class="field-value" readonly style="background:#f9f9f9">
                             </div>
 
-                            <div class="field-item">
-                                <label class="field-label">Toko</label>
-                                <select id="editTokoKaryawan" class="field-value">
-                                    <option>-- Pilih Toko --</option>
-                                    <option>Toko A</option>
-                                    <option>Toko B</option>
-                                </select>
+                            <div class="field-item full-width-field">
+                                <label class="field-label">Update Penempatan Toko</label>
+                                <div class="multi-dropdown" id="editKaryawanTokoDropdown">
+                                    <div class="dropdown-header">Pilih Toko...</div>
+                                    <div class="dropdown-list" id="editKaryawanTokoList">
+                                        </div>
+                                </div>
+                                <small class="hint-text">Ceklis ulang toko yang ditugaskan.</small>
                             </div>
                         </div>
                     </div>
