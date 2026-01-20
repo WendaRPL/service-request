@@ -1,6 +1,13 @@
 /* =========================
    MASTER DATA STYLING
 ========================= */
+.container {
+    padding-top: 30px !important;
+    min-height: 100vh;
+    margin-left: 10px;
+    margin-right: 30px;
+    transition: margin-left 0.35s ease;
+}
 
 .master-data-container {
     margin-top: 10px;
@@ -101,6 +108,34 @@
 .tab-content.active {
     display: flex;
     flex-direction: column;
+}
+
+.live-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--light-gray);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    z-index: 999;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.search-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    border-bottom: 1px solid var(--fourth);
+    transition: 0.2s;
+}
+
+.search-item:hover {
+    background-color: var(--fourth);
+    color: var(--first);
 }
 
 /* Table Container */
@@ -1177,15 +1212,14 @@ MODAL BASE STYLES
     line-height: 1.5;
 }
 
-/* Modal actions */
-.modal-actions {
+/* Update Bagian Action di Modal */
+.modal-action, .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    padding: 10px 15px;
-    border-top: 1px solid rgba(100, 130, 173, 0.08);
-    border-radius: 0 0 10px 10px;
-    background-color: var(--third);
+    gap: 15px;          /* Jarak antar tombol Save & Cancel */
+    margin-top: 20px;   /* Naikin biar gak dempet sama form di atasnya */
+    padding-top: 20px;  /* Kasih ruang di dalam sebelum garis */
+    border-top: 1px solid var(--fourth); /* Garis halus buat pemisah */
 }
 
 /* Button styles */
@@ -1202,6 +1236,7 @@ MODAL BASE STYLES
 }
 
 .btn-cancel {
+    order: 1;
     background: var(--first);
     color: var(--white);
     border-color: rgba(100, 130, 173, 0.2);
@@ -1212,6 +1247,7 @@ MODAL BASE STYLES
 }
 
 .btn-submit {
+    order: 2;
     padding: 8px 18px;
     font-size: 0.85rem;
     border-radius: var(--radius-sm);
@@ -1386,6 +1422,156 @@ table.dataTable tbody td:last-child  {
         font-size: 16px;
         top: 10px;
         right: 10px;
+    }
+
+}
+
+/* =========================
+ROLE PERMISSION SECTION
+========================= */
+
+.key-group {
+    margin-bottom: 18px;
+    padding: 12px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius-sm);
+}
+
+.key-group strong {
+    font-size: 0.8rem;
+    color: var(--first);
+    letter-spacing: 0.4px;
+    display: block;
+}
+
+/* Row checkbox key */
+.key-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.key-row input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--first);
+}
+
+/* =========================
+KEY VALUE WRAPPER
+========================= */
+
+.key-value-wrapper {
+    margin-left: 22px;
+    margin-top: 6px;
+    transition: var(--transition);
+}
+
+.key-value-wrapper.disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+/* =========================
+MULTI DROPDOWN
+========================= */
+
+.multi-dropdown {
+    position: relative;
+    width: 100%;
+    max-width: 280px;
+}
+
+.multi-dropdown .dropdown-header {
+    background: var(--white);
+    border: 1px solid var(--light-gray);
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.multi-dropdown .dropdown-header:hover {
+    border-color: var(--first);
+}
+
+.multi-dropdown .dropdown-list {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 6px 18px var(--shadow-light);
+    max-height: 160px;
+    overflow-y: auto;
+    display: none;
+    z-index: 50;
+    padding: 6px 0;
+}
+
+.multi-dropdown.open .dropdown-list {
+    display: block;
+}
+
+.multi-dropdown .dropdown-list label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.multi-dropdown .dropdown-list label:hover {
+    background-color: var(--fourth);
+}
+
+.multi-dropdown input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    accent-color: var(--first);
+}
+
+/* Hint text */
+.hint-text {
+    font-size: 0.7rem;
+    color: var(--medium-gray);
+    margin-top: 4px;
+    display: block;
+}
+
+/* =========================
+EXPIRATION SECTION
+========================= */
+
+#roleExpirationDate {
+    max-width: 260px;
+}
+
+#roleForever {
+    accent-color: var(--first);
+}
+
+/* =========================
+RESPONSIVE FIX
+========================= */
+@media (max-width: 768px) {
+
+    .multi-dropdown {
+        max-width: 100%;
+    }
+
+    .key-value-wrapper {
+        margin-left: 0;
+        margin-top: 10px;
     }
 
 }
