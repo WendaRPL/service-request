@@ -49,6 +49,33 @@ function loadTabContent(tab) {
         .fail(() => container.html('Gagal load data'));
 }
 
+function renderTokoCheckboxes(containerId, selectedValues = "") {
+    const container = $('#' + containerId);
+    
+    // Walaupun isinya angka, di sini statusnya string "1,2,3"
+    // Kita pecah jadi array: ["1", "2", "3"]
+    let selectedArr = [];
+    if (selectedValues) {
+        selectedArr = selectedValues.toString().split(',').map(item => item.trim());
+    }
+
+    container.html('<div style="padding:10px;">Loading toko...</div>');
+
+    $.getJSON('direct/get_master_option.php', { type: 'toko' }, function(data) {
+        let html = '';
+        data.forEach(toko => {
+            // Kita bandingkan: apakah "1" ada di dalam array ["1", "2", "3"]?
+            const isChecked = selectedArr.includes(toko.id.toString()) ? 'checked' : '';
+            
+            html += `
+                <label style="display:block; padding:5px;">
+                    <input type="checkbox" value="${toko.id}" ${isChecked}> ${toko.text}
+                </label>`;
+        });
+        container.html(html);
+    });
+}
+
 /* =========================
    RENDER TABLE
 ========================= */
@@ -60,7 +87,12 @@ function renderTable(tab, data) {
 
     let columns = [{ title: 'No', data: null, render: (_, __, ___, m) => m.row + 1 }];
     if (tab === 'toko') columns.push({ title: 'Nama', data: 'nama' }, { title: 'Kode', data: 'kode' });
-    if (tab === 'karyawan') columns.push({ title: 'Nama', data: 'nama' }, { title: 'Toko', data: 'toko_text' });
+    if (tab === 'karyawan') {
+        columns.push(
+            { title: 'Nama', data: 'username' }, 
+            { title: 'Toko', data: 'toko_text' } // Menampilkan nama toko di tabel
+        );
+    }
     if (tab === 'jenis_kendala')
         columns.push(
             { title: 'Tipe', data: 'tipe' },
@@ -76,7 +108,7 @@ function renderTable(tab, data) {
         <button class="action-edit edit-btn"
             data-id="${r.id}"
             data-tab="${tab}"
-            data-nama="${r.nama}"
+            data-nama="${r.username || r.nama}"
             data-kode="${r.kode || ''}"
             data-toko="${r.toko_id || ''}"
             data-tipe="${r.tipe || ''}"
@@ -108,8 +140,69 @@ function openAddModal() {
     const map = { toko:'formToko', karyawan:'formKaryawan', jenis_kendala:'formJenisKendala', role:'formRole' };
     $('#' + map[currentTab]).show();
 
-    if(currentTab === 'karyawan') loadMasterOptions('toko', 'addTokoKaryawan');
+    if (currentTab === 'karyawan') {
+        $('#formKaryawan').show();
+        // Reset inputs
+        $('#searchUserKaryawan, #addUserKaryawan, #addUsernameKaryawan').val('');
+        // Load Toko list
+        renderTokoCheckboxes('addKaryawanTokoList');
+    }
 }
+
+/* =========================
+   LIVE SEARCH KARYAWAN
+========================= */
+$('#searchUserKaryawan').on('input', function() {
+    let keyword = $(this).val();
+    let resultsBox = $('#userSearchResults');
+
+    if (keyword.length < 2) {
+        resultsBox.hide();
+        return;
+    }
+
+    // Tembak endpoint yang baru kita modif
+    $.getJSON('direct/get_users.php', { 
+        query: keyword, 
+        search_karyawan: 1 // Flag biar dapet user yang belum jadi karyawan aja
+    })
+    .done(users => {
+        let html = '';
+        if (users.length > 0) {
+            users.forEach(user => {
+                html += `
+                    <div class="search-item" data-id="${user.id}" data-name="${user.username}">
+                        <strong>${user.username}</strong> <br>
+                        <small>Role: ${user.role_name || '-'}</small>
+                    </div>`;
+            });
+            resultsBox.html(html).show();
+        } else {
+            resultsBox.html('<div class="search-item">User tidak ditemukan</div>').show();
+        }
+    });
+});
+
+// Klik Hasil Search
+$(document).on('click', '.search-item', function() {
+    let id = $(this).data('id');
+    let name = $(this).data('name');
+
+    // Isi hidden input
+    $('#addUserKaryawan').val(id);
+    $('#addUsernameKaryawan').val(name);
+    
+    // Tampilkan nama yang dipilih di kolom search agar user tahu sudah terpilih
+    $('#searchUserKaryawan').val(name);
+
+    // Tutup hasil pencarian
+    $('#userSearchResults').hide();
+});
+
+// Tutup search kalau klik di luar
+$(document).click(e => {
+    if (!$(e.target).closest('#formKaryawan').length) $('#userSearchResults').hide();
+});
 
 /* =========================
    SAVE DATA (FIXED VERSION)
@@ -123,8 +216,22 @@ function saveAddData() {
     }
 
     if (currentTab === 'karyawan') {
-        payload.nama = $('#addNamaKaryawan').val();
-        payload.toko = $('#addTokoKaryawan').val();
+        // 1. Ambil ID & Username dari hidden input (Hasil live search)
+        payload.user_id = $('#addUserKaryawan').val();
+        payload.username = $('#addUsernameKaryawan').val();
+
+        // 2. PROSES "EXPLODE" DI JS: Ambil semua checkbox yang dicentang
+        let selectedToko = [];
+        $('#addKaryawanTokoList input[type="checkbox"]:checked').each(function() {
+            selectedToko.push($(this).val());
+        });
+
+        // 3. Gabungkan menjadi string "1,2,5" untuk dikirim ke PHP
+        payload.user_toko = selectedToko.join(',');
+
+        // Validasi: Pastikan user dan toko sudah dipilih
+        if(!payload.user_id) return alert("Cari dan pilih user terlebih dahulu!");
+        if(selectedToko.length === 0) return alert("Pilih minimal satu toko!");
     }
 
     if (currentTab === 'jenis_kendala') {
@@ -263,14 +370,12 @@ function bindEdit(){
             $('#editKodeToko').val(d.kode);
         }
 
+        // Cari di dalam fungsi bindEdit(), pada blok if(d.tab==='karyawan')
         if(d.tab==='karyawan'){
-            $('#editNamaKaryawan').val(d.nama);
-            $.getJSON('direct/get_master_option.php',{type:'toko'}, res=>{
-                const s = $('#editTokoKaryawan');
-                s.html('<option value="">-- Pilih --</option>');
-                res.forEach(i=> s.append(`<option value="${i.id}">${i.text}</option>`));
-                s.val(d.toko);
-            });
+            $('#editNamaKaryawan').val(d.nama); 
+            
+            // PANGGIL RENDER CHECKBOX (d.toko bawa string ID "1,2")
+            renderTokoCheckboxes('editKaryawanTokoList', d.toko);
         }
 
         if(d.tab==='jenis_kendala'){
@@ -438,9 +543,20 @@ function updateData() {
     } else if(tab === 'toko') {
         payload.nama = $('#editNamaToko').val();
         payload.kode = $('#editKodeToko').val();
+    // Cari di dalam fungsi updateData(), pada blok else if(tab === 'karyawan')
     } else if(tab === 'karyawan') {
-        payload.nama = $('#editNamaKaryawan').val();
-        payload.toko = $('#editTokoKaryawan').val();
+        payload.username = $('#editNamaKaryawan').val();
+
+        // AMBIL SEMUA CHECKBOX YANG DICENTANG
+        let selectedToko = [];
+        $('#editKaryawanTokoList input[type="checkbox"]:checked').each(function() {
+            selectedToko.push($(this).val());
+        });
+
+        payload.user_toko = selectedToko.join(','); // Hasilnya "1,2,5"
+        
+        if(selectedToko.length === 0) return alert("Pilih minimal 1 toko!");
+
     } else if(tab === 'jenis_kendala') {
         payload.tipe = $('#editTipeKendala').val();
         payload.jenis = $('#editJenisKendala').val();
