@@ -5,6 +5,33 @@ $pageTitle = "Home";
 
 /**
  * ==========================
+ * REQUEST BELUM DI-RATING
+ * ==========================
+ */
+$sqlUnrated = "
+SELECT 
+    r.id,
+    r.input_datetime,
+    IFNULL(r.jenis_kendala,'') AS jenis_kendala,
+    IFNULL(r.hasil_it,'') AS hasil_it,
+    IFNULL(stf.username,'-') AS staff_name
+FROM transaksi_request r
+LEFT JOIN users stf ON r.handling_by = stf.id
+WHERE 
+    r.user_request = ?
+    AND r.status = 4
+    AND (r.rating IS NULL OR r.rating = '')
+ORDER BY r.input_datetime DESC
+";
+
+$stmt = $conn->prepare($sqlUnrated);
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$resUnrated = $stmt->get_result();
+$unratedRequests = $resUnrated->fetch_all(MYSQLI_ASSOC);    
+
+/**
+ * ==========================
  * AMBIL DATA REQUEST (QUEUE)
  * ==========================
  */
@@ -420,7 +447,9 @@ ob_start();
 <div id="unratedModal" class="modal-overlay"> 
     <div class="modal-content"> 
         <div class="modal-header"> 
-            <h2>Request Belum Di-Rating</h2>
+            <h2>Request Belum Di-Rating
+                <span id="unratedCount" class="unrated-counter">(0)</span>
+            </h2>
             <span class="modal-close-btn" onclick="closeUnratedModal()"> 
                 <i class="fas fa-times"></i> 
             </span> 
@@ -922,6 +951,9 @@ ob_start();
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    const unratedRequestsData = <?= json_encode($unratedRequests); ?>;
+</script>
 <script src="dist/js/home.js"></script>
 
 <?php
