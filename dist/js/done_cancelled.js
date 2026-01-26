@@ -1,467 +1,106 @@
-// done_cancelled.js - PHP+AJAX VERSION
-
 // =========================
 // GLOBAL VARIABLES
 // =========================
 let currentTab = 'done';
-let doneTable = null;
-let canceledTable = null;
+window.doneTable = null;
+window.canceledTable = null;
 
 // =========================
 // DOM READY
 // =========================
-document.addEventListener('DOMContentLoaded', function() {
-    initDataTables();
-    initFilterToggle();
-    initFilters();
+document.addEventListener('DOMContentLoaded', function () {
+    initDataTables(); 
     initModals();
-    initButtonActions();
+    initReportButtonActions();   
     setDefaultDates();
-    
-    // Tab switching
-    document.getElementById('tab-done').addEventListener('click', () => switchTab('done'));
-    document.getElementById('tab-canceled').addEventListener('click', () => switchTab('canceled'));
+
+    document.getElementById('tab-done')?.addEventListener('click', () => switchTab('done'));
+    document.getElementById('tab-canceled')?.addEventListener('click', () => switchTab('canceled'));
 });
 
 // =========================
-// DATATABLES INITIALIZATION
+// MODAL CONTROLLER (SAFE)
 // =========================
-function initDataTables() {
-    // Initialize Done Table
-    if ($('#doneTable').length) {
-        doneTable = $('#doneTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            order: [[5, 'desc']], // Sort by tanggal
-            language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ data",
-                zeroRecords: "Tidak ada data yang ditemukan",
-                info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                infoEmpty: "Tidak ada data",
-                infoFiltered: "(disaring dari _MAX_ total data)",
-                paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "›",
-                    previous: "‹"
-                }
-            },
-            columnDefs: [
-                { orderable: false, targets: [0, 7] }, // No dan Aksi tidak bisa di-sort
-                { className: 'dt-center', targets: [0, 4] }, // Center untuk No dan Urgensi
-                { responsivePriority: 1, targets: [1, 2, 3] } // Priority untuk kolom penting
-            ]
-        });
-    }
-    
-    // Initialize Canceled Table
-    if ($('#canceledTable').length) {
-        canceledTable = $('#canceledTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            order: [[5, 'desc']],
-            language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ data",
-                zeroRecords: "Tidak ada data yang ditemukan",
-                info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                infoEmpty: "Tidak ada data",
-                infoFiltered: "(disaring dari _MAX_ total data)",
-                paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "›",
-                    previous: "‹"
-                }
-            },
-            columnDefs: [
-                { orderable: false, targets: [0, 7] },
-                { className: 'dt-center', targets: [0, 4] },
-                { responsivePriority: 1, targets: [1, 2, 3] }
-            ]
-        });
-    }
-}
+function modal(id, action = 'open') {
+    const el = document.getElementById(id);
+    if (!el) return;
 
-// =========================
-// TAB SWITCHING
-// =========================
-function switchTab(tab) {
-    currentTab = tab;
-    
-    const doneTab = document.getElementById('tab-done');
-    const canceledTab = document.getElementById('tab-canceled');
-    const doneContainer = document.getElementById('done-table');
-    const canceledContainer = document.getElementById('canceled-table');
-    
-    if (tab === 'done') {
-        doneTab.classList.add('active');
-        canceledTab.classList.remove('active');
-        doneContainer.style.display = 'block';
-        canceledContainer.style.display = 'none';
-        
-        // Redraw table jika perlu
-        if (doneTable) {
-            setTimeout(() => doneTable.columns.adjust().responsive.recalc(), 100);
-        }
+    if (action === 'open') {
+        // tutup modal lain dulu (1 modal aktif)
+        document.querySelectorAll('.modal.show')
+            .forEach(m => m.classList.remove('show'));
+
+        el.classList.add('show');
+        document.body.style.overflow = 'hidden';
     } else {
-        doneTab.classList.remove('active');
-        canceledTab.classList.add('active');
-        doneContainer.style.display = 'none';
-        canceledContainer.style.display = 'block';
-        
-        if (canceledTable) {
-            setTimeout(() => canceledTable.columns.adjust().responsive.recalc(), 100);
+        el.classList.remove('show');
+
+        // unlock body kalau tidak ada modal terbuka
+        if (!document.querySelector('.modal.show')) {
+            document.body.style.overflow = 'auto';
         }
     }
 }
 
-// =========================
-// FILTER TOGGLE
-// =========================
-function initFilterToggle() {
-    const btnToggleFilter = document.getElementById('btnToggleFilter');
-    const filterPanel = document.getElementById('filterPanel');
-    
-    if (btnToggleFilter && filterPanel) {
-        btnToggleFilter.addEventListener('click', function() {
-            filterPanel.classList.toggle('show');
-            this.innerHTML = filterPanel.classList.contains('show') 
-                ? 'Filter ▲' 
-                : 'Filter ▼';
-        });
-    }
-}
-
-// =========================
-// FILTER FUNCTIONS
-// =========================
-function initFilters() {
-    // Apply Filter
-    document.getElementById('btnApplyFilter')?.addEventListener('click', function() {
-        applyFilters();
-    });
-    
-    // Reset Filter
-    document.getElementById('btnResetFilter')?.addEventListener('click', function() {
-        resetFilters();
-    });
-    
-    // Enter key untuk filter date
-    document.querySelectorAll('#filterPanel input').forEach(input => {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                applyFilters();
-            }
-        });
-    });
-}
-
-function applyFilters() {
-    const toko = document.getElementById('filter-toko').value.trim();
-    const peminta = document.getElementById('filter-peminta').value.trim();
-    const handler = document.getElementById('filter-handler').value.trim();
-    const startDate = document.getElementById('filter-start-date').value;
-    const endDate = document.getElementById('filter-end-date').value;
-    
-    // Apply ke tabel yang aktif
-    const table = currentTab === 'done' ? doneTable : canceledTable;
-    
-    if (table) {
-        table.columns().search(''); // Reset semua
-        
-        // Filter per kolom
-        if (toko) table.column(1).search(toko, true, false);
-        if (peminta) table.column(2).search(peminta, true, false);
-        if (handler) table.column(6).search(handler, true, false);
-        
-        // Filter tanggal (kolom 5)
-        if (startDate || endDate) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                const dateStr = data[5]; // Tanggal dalam format "01 Jan 2025 14:30"
-                const rowDate = parseCustomDate(dateStr);
-                
-                if (!rowDate) return true;
-                
-                if (startDate && rowDate < new Date(startDate)) return false;
-                if (endDate && rowDate > new Date(endDate + ' 23:59:59')) return false;
-                
-                return true;
-            });
-        }
-        
-        table.draw();
-        
-        // Hapus filter tanggal setelah draw
-        if (startDate || endDate) {
-            $.fn.dataTable.ext.search.pop();
-        }
-    }
-}
-
-function parseCustomDate(dateStr) {
-    // Parse format "01 Jan 2025 14:30"
-    const months = {
-        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
-    };
-    
-    const parts = dateStr.split(' ');
-    if (parts.length >= 3) {
-        const day = parseInt(parts[0]);
-        const month = months[parts[1]];
-        const year = parseInt(parts[2]);
-        
-        let hour = 0, minute = 0;
-        if (parts.length > 3) {
-            const timeParts = parts[3].split(':');
-            hour = parseInt(timeParts[0]) || 0;
-            minute = parseInt(timeParts[1]) || 0;
-        }
-        
-        return new Date(year, month, day, hour, minute);
-    }
-    
-    return null;
-}
-
-function resetFilters() {
-    // Reset input values
-    document.getElementById('filter-toko').value = '';
-    document.getElementById('filter-peminta').value = '';
-    document.getElementById('filter-handler').value = '';
-    document.getElementById('filter-start-date').value = '';
-    document.getElementById('filter-end-date').value = '';
-    
-    // Reset tabel
-    const table = currentTab === 'done' ? doneTable : canceledTable;
-    if (table) {
-        table.columns().search('');
-        table.search('');
-        table.draw();
-    }
-}
-
-// =========================
-// MODAL FUNCTIONS
-// =========================
-function initModals() {
-    // Close modal dengan klik di luar
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('modal')) {
-            closeModal(e.target.id);
+function initModals() { 
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('close-btn')) {
+            const modalEl = e.target.closest('.modal');
+            if (modalEl) modal(modalEl.id, 'close');
         }
     });
-    
-    // Close modal dengan ESC
-    document.addEventListener('keydown', function(e) {
+ 
+    document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
-            closeAllModals();
-        }
-    });
-    
-    // Close button
-    document.querySelectorAll('.close-btn, .btn-cancel').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            if (modal) {
-                closeModal(modal.id);
-            }
-        });
-    });
-}
-
-function initButtonActions() {
-    // Event delegation untuk detail button
-    document.addEventListener('click', function(e) {
-        // Detail button
-        if (e.target.classList.contains('btn-detail') || 
-            e.target.closest('.btn-detail')) {
-            const button = e.target.classList.contains('btn-detail') 
-                ? e.target 
-                : e.target.closest('.btn-detail');
-            
-            const requestId = button.getAttribute('data-id');
-            if (requestId) {
-                openDetailModal(requestId);
-            }
+            document.querySelectorAll('.modal.show')
+                .forEach(m => modal(m.id, 'close'));
         }
     });
 }
 
 // =========================
-// DETAIL MODAL WITH AJAX
+// DATATABLE
 // =========================
-function openDetailModal(requestId) {
-    const modal = document.getElementById('detailModal');
-    const modalBody = document.getElementById('modalDetailBody');
-    
-    // Show loading
-    modalBody.innerHTML = `
-        <div class="loading-spinner" style="text-align: center; padding: 40px;">
-            <i class="fas fa-spinner fa-spin fa-2x"></i>
-            <p>Memuat data...</p>
-        </div>
-    `;
-    
-    // Show modal
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-    
-    // AJAX request
-    fetch(`ajax_get_detail.php?id=${requestId}`)
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(result => {
-            if (result.success && result.data) {
-                const data = result.data;
-                modalBody.innerHTML = generateDetailHTML(data);
-            } else {
-                modalBody.innerHTML = `
-                    <div class="error-state" style="text-align: center; padding: 40px;">
-                        <i class="fas fa-exclamation-triangle fa-2x" style="color: #e74c3c;"></i>
-                        <p>${result.error || 'Gagal memuat data'}</p>
-                    </div>
-                `;
+let doneTable, canceledTable;
+
+function initDataTables() {
+    // Konfigurasi umum untuk kedua tabel
+    const tableConfig = {
+        responsive: true,
+        autoWidth: false,
+        pageLength: 10,
+        lengthChange: true,
+        lengthMenu: [10, 25, 50, 100],
+        ordering: true,
+        searching: true,
+        info: true,
+        order: [[8, 'desc']],
+        language: {
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data",
+            zeroRecords: "Data tidak ditemukan",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            infoEmpty: "Tidak ada data",
+            paginate: {
+                previous: "‹",
+                next: "›"
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            modalBody.innerHTML = `
-                <div class="error-state" style="text-align: center; padding: 40px;">
-                    <i class="fas fa-exclamation-triangle fa-2x" style="color: #e74c3c;"></i>
-                    <p>Terjadi kesalahan saat mengambil data</p>
-                    <small>${error.message}</small>
-                </div>
-            `;
-        });
-}
-
-function generateDetailHTML(data) {
-    // Tentukan class urgensi
-    let urgensiClass = '';
-    switch(data.level_urgensi) {
-        case 'Sangat Tinggi': urgensiClass = 'very-high'; break;
-        case 'Tinggi': urgensiClass = 'high'; break;
-        case 'Sedang': urgensiClass = 'medium'; break;
-        case 'Rendah': urgensiClass = 'low'; break;
+        },
+        columnDefs: [
+            { orderable: false, targets: [9] },
+            { className: 'dt-center', targets: [0] },
+            { responsivePriority: 1, targets: [1, 2, 6] },
+            { targets: 0, type: 'num' }
+        ]
+    };
+ 
+    if ($('#doneTable').length) {
+        window.doneTable = $('#doneTable').DataTable(tableConfig);
     }
-    
-    return `
-        <div class="field-grid">
-            <div class="field-item">
-                <label class="field-label">ID Request</label>
-                <input type="text" class="field-value" value="#${data.id}" readonly>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Status</label>
-                <input type="text" class="field-value status-value" value="${data.status_nama}" readonly>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Toko</label>
-                <input type="text" class="field-value" value="${data.user_toko || '-'}" readonly>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Peminta</label>
-                <input type="text" class="field-value" value="${data.peminta_nama || '-'}" readonly>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Email Peminta</label>
-                <input type="text" class="field-value" value="${data.peminta_email || '-'}" readonly>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Tanggal Request</label>
-                <input type="text" class="field-value" value="${data.created_at_formatted}" readonly>
-            </div>
-            
-            <div class="field-item full-width-field">
-                <div class="section-divider">Informasi Kendala</div>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Jenis Kendala</label>
-                <input type="text" class="field-value" value="${data.jenis_kendala || '-'}" readonly>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Level Urgensi</label>
-                <div class="field-value urgency-cell" style="padding: 5px;">
-                    <div class="urgency-card">
-                        <span class="urgency-code">${data.jenis || 'S'}</span>
-                        <span class="urgency-badge ${urgensiClass}">
-                            ${data.level_urgensi || 'Sedang'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="field-item full-width-field">
-                <label class="field-label">Deskripsi Kendala</label>
-                <textarea class="field-value textarea-value" rows="4" readonly>${data.deskripsi_kendala || 'Tidak ada deskripsi'}</textarea>
-            </div>
-            
-            <div class="field-item full-width-field">
-                <div class="section-divider">Informasi Penyelesaian</div>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Handler</label>
-                <input type="text" class="field-value" value="${data.staff_nama || '-'}" readonly>
-            </div>
-            
-            <div class="field-item">
-                <label class="field-label">Tanggal ${data.status_nama}</label>
-                <input type="text" class="field-value" value="${data.status_timestamp_formatted}" readonly>
-            </div>
-            
-            <div class="field-item full-width-field">
-                <label class="field-label">Catatan Penyelesaian</label>
-                <textarea class="field-value textarea-value" rows="3" readonly>${data.catatan_penyelesaian || 'Tidak ada catatan'}</textarea>
-            </div>
-        </div>
-    `;
-}
-
-// =========================
-// UTILITY FUNCTIONS
-// =========================
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => {
-            document.body.style.overflow = '';
-        }, 300);
+ 
+    if ($('#canceledTable').length) {
+        window.canceledTable = $('#canceledTable').DataTable(tableConfig);
     }
-}
-
-function closeAllModals() {
-    document.querySelectorAll('.modal.show').forEach(modal => {
-        modal.classList.remove('show');
-    });
-    document.body.style.overflow = '';
-}
-
-function setDefaultDates() {
-    const today = new Date();
-    const lastWeek = new Date(today);
-    lastWeek.setDate(today.getDate() - 7);
-    
-    // Format YYYY-MM-DD
-    const formatDate = (date) => date.toISOString().split('T')[0];
-    
-    document.getElementById('filter-start-date').value = formatDate(lastWeek);
-    document.getElementById('filter-end-date').value = formatDate(today);
 }
 
 // =========================
@@ -472,13 +111,224 @@ function goToDashboard() {
 }
 
 // =========================
-// RESPONSIVE FIX
+// FILTER SYSTEM (LIVE)
 // =========================
-window.addEventListener('resize', function() {
-    if (doneTable) {
-        setTimeout(() => doneTable.columns.adjust().responsive.recalc(), 100);
+$(document).ready(function() { 
+    const tableDone = $('#doneTable').DataTable();
+    const tableCanceled = $('#canceledTable').DataTable();
+
+    // 2. Logika Toggle Panel Filter
+    $('#btnToggleFilter').on('click', function() {
+        $('#filterPanel').slideToggle();
+        $(this).toggleClass('active');
+    });
+ 
+    $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) { 
+            const row = $(settings.nTable).DataTable().row(dataIndex).node();
+            const dateStr = $(row).attr('data-tanggal');  
+            
+            const min = $('#filter-start-date').val();  
+            const max = $('#filter-end-date').val();  
+            
+            if (!dateStr) return true;
+
+            const date = new Date(dateStr);
+            const startDate = min ? new Date(min) : null;
+            const endDate = max ? new Date(max) : null;
+
+            if (startDate && date < startDate) return false;
+            if (endDate && date > endDate) return false;
+            
+            return true;
+        }
+    );
+ 
+    function applyFilters() {
+        const toko = $('#filter-toko').val();
+        const penerima = $('#filter-penerima').val();
+        const handler = $('#filter-handler').val();
+ 
+        tableDone
+            .column(1).search(toko)     
+            .column(3).search(penerima)  
+            .column(7).search(handler)   
+            .draw();
+
+        // Terapkan ke tabel Canceled
+        tableCanceled
+            .column(1).search(toko)     
+            .column(3).search(penerima) 
+            .column(7).search(handler)   
+            .draw();
     }
-    if (canceledTable) {
-        setTimeout(() => canceledTable.columns.adjust().responsive.recalc(), 100);
+ 
+    $('.live-filter').on('change keyup', function() {
+        applyFilters();
+    });
+});
+
+// =========================
+// TAB SWITCH
+// =========================
+function switchTab(tab) {
+    currentTab = tab; 
+
+    if (tab === 'done') {
+        $('#done-table').show();
+        $('#canceled-table').hide(); 
+        if (window.doneTable) window.doneTable.columns.adjust().responsive.recalc();
+    } else {
+        $('#done-table').hide();
+        $('#canceled-table').show(); 
+        if (window.canceledTable) window.canceledTable.columns.adjust().responsive.recalc();
+    }
+ 
+    $('.tab-button').removeClass('active');
+    $(`#tab-${tab}`).addClass('active');
+}
+
+// =========================
+// DETAIL MODAL ACTIONS  
+// =========================
+document.addEventListener('click', function (e) { 
+    if (e.target.closest('.btn-detail')) {
+        const btn = e.target.closest('.btn-detail');
+         
+        const data = {
+            id: btn.getAttribute('data-id'),
+            toko: btn.getAttribute('data-toko'),
+            peminta: btn.getAttribute('data-peminta'),
+            penerima: btn.getAttribute('data-penerima'),
+            terjadi: btn.getAttribute('data-terjadi'),
+            sh: btn.getAttribute('data-sh'),
+            jenis: btn.getAttribute('data-jenis'),
+            hw: btn.getAttribute('data-kode-hw'),
+            status: btn.getAttribute('data-status'),
+            staff: btn.getAttribute('data-staff'),
+            tanggal: btn.getAttribute('data-tanggal'),
+            deskripsi: btn.getAttribute('data-deskripsi'),
+            upload: btn.getAttribute('data-upload')
+        };
+ 
+        document.getElementById('detail-no').innerText = data.id;
+        document.getElementById('detail-toko').innerText = data.toko;
+        document.getElementById('detail-peminta').innerText = data.peminta;
+        document.getElementById('detail-penerima').innerText = data.penerima;
+        document.getElementById('detail-terjadi').innerText = data.terjadi;
+        document.getElementById('detail-sh').innerHTML = data.sh;
+        document.getElementById('detail-jenis').innerText = data.jenis;
+        document.getElementById('detail-kode-hw').innerText = data.hw || '-';
+        document.getElementById('detail-status').innerText = data.status;
+        document.getElementById('detail-staff').innerText = data.staff;
+        document.getElementById('detail-tanggal').innerText = data.tanggal;
+        document.getElementById('detail-deskripsi').value = data.deskripsi; // Gunakan .value untuk textarea
+ 
+        const attachmentContainer = document.getElementById('attachment-container');
+        attachmentContainer.innerHTML = '';  
+        
+        if (data.upload && data.upload !== '') {
+            const img = document.createElement('img');
+            img.src = 'uploads/' + data.upload;  
+            img.style.maxWidth = '100%';
+            img.style.borderRadius = '8px';
+            img.alt = 'Lampiran';
+            attachmentContainer.appendChild(img);
+        } else {
+            attachmentContainer.innerHTML = '<span style="color: #999; font-style: italic;">Tidak ada lampiran</span>';
+        }
+ 
+        document.getElementById('detailModal').classList.add('show');
+    }
+ 
+    if (e.target.classList.contains('close-btn')) {
+        const modalEl = e.target.closest('.modal');
+        if (modalEl) {
+            modal(modalEl, 'close');  
+        }
     }
 });
+
+// =========================
+// REPORT BUTTON ACTIONS
+// ========================= 
+function initReportButtonActions() { 
+    $(document).on('click', '.btn-report', function () {
+        const btn = $(this);
+         
+        const data = {
+            id:      btn.attr('data-id'),
+            toko:    btn.attr('data-toko'),
+            user:    btn.attr('data-user'),
+            peminta: btn.attr('data-peminta'),
+            sh:      btn.attr('data-sh'),  
+            kendala: btn.attr('data-kendala'),
+            kode:    btn.attr('data-kode'),
+            wrong:   btn.attr('data-wrong')
+        };
+ 
+        const shText = data.sh ? data.sh.replace(/<[^>]*>?/gm, '').trim() : '-';
+ 
+        $('#r-no').val(data.id || '-');
+        $('#r-toko-old').val(data.toko || '-');
+        $('#r-user-old').val(data.user || '-');
+        $('#r-peminta-old').val(data.peminta || '-');
+        $('#r-sh-old').val(shText);
+        $('#r-kendala-old').val(data.kendala || '-');
+        $('#r-kode-old').val(data.kode || '-');
+         
+        $('#r-user-wrong-input').val(data.wrong !== '-' ? data.wrong : '');
+ 
+        modal('reportModal', 'open');
+    });
+ 
+    $('#btn-submit-report').off('click').on('click', function() {
+        const $btn = $(this);
+        const requestId = $('#r-no').val();
+        const wrongInput = $('#r-user-wrong-input').val();
+
+        if(!wrongInput.trim()) {
+            alert('Mohon isi detail ketidaksesuaian input.');
+            return;
+        }
+
+        $btn.prop('disabled', true).text('Menyimpan...');
+
+        $.ajax({
+            url: 'direct/process_update_report.php', 
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                id: requestId,
+                ketidaksesuaian: wrongInput
+            },
+            success: function(res) {
+                if(res.success) {
+                    alert('Laporan berhasil diperbarui!');
+                    location.reload();
+                } else {
+                    alert('Gagal: ' + res.message);
+                }
+            },
+            error: function() {
+                alert('Terjadi kesalahan koneksi ke server.');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Simpan Laporan');
+            }
+        });
+    });
+}
+
+// =========================
+// DEFAULT DATE
+// =========================
+function setDefaultDates() {
+    const today = new Date();
+    const lastWeek = new Date(today);
+    lastWeek.setDate(today.getDate() - 7);
+
+    const f = d => d.toISOString().split('T')[0];
+    $('#filter-start-date').val(f(lastWeek));
+    $('#filter-end-date').val(f(today));
+}
