@@ -2,7 +2,8 @@
 // GLOBAL VARIABLES
 // =========================
 let currentDropdown = null;
-let currentRequestId = null;
+let currentRequestId = null; 
+let unratedRequests = []; 
 
 // =========================
 // MODAL MANAGEMENT SYSTEM 
@@ -62,7 +63,7 @@ function closeModal(id) {
    GLOBAL EVENT HANDLERS
 ========================= */
 
-// Klik luar modal (overlay)
+// Klik luar modal (overlay)sh
 document.addEventListener('click', function (e) {
     // Tombol close (X)
     if (e.target.classList.contains('close-btn')) {
@@ -72,8 +73,7 @@ document.addEventListener('click', function (e) {
         }
     }
 });
-
-// Fungsi untuk membuka detail dari panel "Open"  
+  
 function openQueueDetail(button) { 
     const data = {
         id: button.getAttribute('data-id'),
@@ -81,7 +81,7 @@ function openQueueDetail(button) {
         peminta: button.getAttribute('data-peminta'),
         penerima: button.getAttribute('data-penerima'),
         sh: button.getAttribute('data-sh'), 
-        kodeHardware: button.getAttribute('data-kode-hw'),
+        kodeHardware: button.getAttribute('data-kode-hardware'),
         jenis: button.getAttribute('data-jenis'),
         status: button.getAttribute('data-status'), 
         staff: '-', 
@@ -89,63 +89,75 @@ function openQueueDetail(button) {
         terjadi: button.getAttribute('data-terjadi'),
         upload: button.getAttribute('data-upload')
     };
-    fillAndOpenDetail(data);
+    fillAndOpenDetail(data, true); 
 }
 
-function fillAndOpenDetail(data) {
-    const setEl = (id, val, isHTML = false) => {
+function fillAndOpenDetail(data, showAccept = true) {
+    const setEl = (id, val, isHTML = true) => {
         const el = document.getElementById(id);
         if (el) {
             if (isHTML) el.innerHTML = val || '-';
             else el.textContent = val || '-';
         }
     };
-
+ 
     setEl('detail-no', data.id);
     setEl('detail-toko', data.toko);
     setEl('detail-peminta', data.peminta);
     setEl('detail-penerima', data.penerima);
-    setEl('detail-user', data.penerima); // Backup ID
     setEl('detail-sh', data.sh, true);
     setEl('detail-jenis', data.jenis);
     setEl('detail-status', data.status);
     setEl('detail-staff', data.staff);
     setEl('detail-kode-hw', data.kodeHardware);
     setEl('detail-terjadi', data.terjadi);
-
-    // Deskripsi
+ 
     const descEl = document.getElementById('detail-deskripsi');
     if (descEl) {
         if (descEl.tagName === 'TEXTAREA') descEl.value = data.desc;
         else descEl.textContent = data.desc;
     }
-
-    // HANDLER UNTUK UPLOAD (Gambar/File)
-    const uploadContainer = document.getElementById('detail-upload-container');
-    if (uploadContainer) {
-        if (data.upload && data.upload !== '') {
-            const ext = data.upload.split('.').pop().toLowerCase();
-            const path = 'uploads/' + data.upload; // Sesuaikan folder upload Anda
+ 
+    const displayArea = document.getElementById('detail-upload-display');
+    if (displayArea) {
+        if (data.upload && data.upload !== '' && data.upload !== '-') {
+            const fileName = data.upload;
+            const fileExt = fileName.split('.').pop().toLowerCase();
+            const filePath = 'uploads/' + fileName;  
             
-            if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
-                uploadContainer.innerHTML = `<img src="${path}" style="max-width:100%; cursor:pointer;" onclick="window.open('${path}')">`;
-            } else {
-                uploadContainer.innerHTML = `<a href="${path}" target="_blank">Lihat Lampiran File (.${ext})</a>`;
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExt)) { 
+                displayArea.innerHTML = `
+                    <a href="${filePath}" target="_blank">
+                        <img src="${filePath}" style="max-width:100%; max-height:200px; border-radius:8px; border:1px solid #ddd; cursor:pointer;">
+                        <br><small>Klik untuk perbesar</small>
+                    </a>`;
+            } else { 
+                displayArea.innerHTML = `
+                    <div style="padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+                        <i class="fas fa-file-alt"></i> 
+                        <a href="${filePath}" target="_blank" style="color: blue; font-weight: bold;">
+                            Lihat Dokumen (${fileExt.toUpperCase()})
+                        </a>
+                    </div>`;
             }
         } else {
-            uploadContainer.innerHTML = '<em>Tidak ada lampiran</em>';
+            displayArea.innerHTML = '<span class="text-muted">Tidak ada lampiran</span>';
+        }
+    }
+ 
+    const actionContainer = document.getElementById('detailModalActions');
+    const acceptBtn = document.getElementById('btnAcceptFromModal');
+    if (actionContainer) {
+        if (showAccept && (data.status.toLowerCase() === 'open' || data.status === '1')) {
+            actionContainer.style.display = 'flex';
+            if (acceptBtn) acceptBtn.dataset.id = data.id;
+        } else {
+            actionContainer.style.display = 'none';
         }
     }
 
-    // Tombol Accept
-    const acceptBtn = document.getElementById('btnAcceptFromModal');
-    if (acceptBtn) {
-        acceptBtn.dataset.id = data.id;
-        acceptBtn.style.display = (String(data.status).toLowerCase() === 'open') ? 'inline-block' : 'none';
-    }
-
     openModal('requestDetailModal');
-}
+} 
 
 // =========================
 // DETAIL REQUEST MODAL
@@ -157,23 +169,22 @@ function openDetailRequest(requestId) {
         return;
     }
 
-    // Ambil data dari atribut row dan kolom
     const cells = row.querySelectorAll('td');
     const data = {
         id: requestId,
-        toko: cells[1].textContent.trim(),
-        peminta: cells[2].textContent.trim(),
-        penerima: cells[3].textContent.trim(),
-        sh: cells[4].innerHTML, 
-        jenis: cells[5].textContent.trim(),
+        toko: cells[1] ? cells[1].textContent.trim() : '-',
+        peminta: cells[2] ? cells[2].textContent.trim() : '-',
+        penerima: cells[3] ? cells[3].textContent.trim() : '-',
+        sh: cells[4] ? cells[4].innerHTML : '-', 
+        jenis: cells[5] ? cells[5].textContent.trim() : '-',
         status: row.querySelector('.status-card')?.textContent.trim() || cells[6].textContent.trim(),
-        staff: cells[7]?.textContent.trim() || '-',
-        terjadi: row.getAttribute('data-terjadi-pada') || '',
-        desc: row.getAttribute('data-deskripsi') || '', 
+        staff: cells[7] ? cells[7].textContent.trim() : '-',
+        terjadi: row.getAttribute('data-terjadi-pada') || '-',
+        desc: row.getAttribute('data-deskripsi') || '-', 
         kodeHardware: row.getAttribute('data-kode-hw') || '-',
         upload: row.getAttribute('data-upload') || ''
     };
-    fillAndOpenDetail(data);
+    fillAndOpenDetail(data, false);
 
     // Isi ke elemen Modal Detail
     document.getElementById('detail-no').textContent = data.id;
@@ -195,7 +206,6 @@ function openDetailRequest(requestId) {
         else descElem.textContent = data.desc;
     }
 
-    // Logika tombol accept di dalam modal
     const acceptBtn = document.getElementById('btnAcceptFromModal');
     if (acceptBtn) {
         acceptBtn.dataset.id = data.id;
@@ -287,81 +297,72 @@ if (btnSubmitTransfer) {
 // ==========================================
 let tempStatusData = {};
 
-// --- FUNGSI BARU: Update Dropdown Jenis Berdasarkan Tipe ---
 function updateJenisDropdown(tipe, selectedJenis = "") {
     const selectJenis = document.getElementById('ubah-status-jenis');
-    const groupHW = document.getElementById('group-kode-hardware');
-    const inputHW = document.getElementById('ubah-status-kode-hw');
-
     if (!selectJenis) return;
+
+    selectJenis.innerHTML = '<option value="">-- Pilih Jenis Kendala --</option>';
     
-    selectJenis.innerHTML = ''; // Kosongkan dulu
-    
-    // Tampilkan input Kode Hardware hanya jika Tipe = Hardware
-    if (tipe === 'hardware') {
-        if (groupHW) groupHW.style.display = 'block';
-    } else {
-        if (groupHW) groupHW.style.display = 'none';
-        if (inputHW) inputHW.value = ''; // Reset nilai jika pindah ke software
+    const sourceData = window.dataKendala || {};
+    if (!tipe) return;
+ 
+    const targetKey = Object.keys(sourceData).find(
+        key => key.toLowerCase() === tipe.toLowerCase()
+    );
+
+    const list = targetKey ? window.dataKendala[targetKey] : [];
+
+    if (list.length === 0) {
+        console.warn("Data kendala tidak ditemukan untuk tipe:", tipe);
     }
-    
-    // Ambil data dari objek dataKendala
-    const list = dataKendala[tipe.toLowerCase()];
-    if (list) {
-        list.forEach(item => {
-            const opt = document.createElement('option');
-            opt.value = item;
-            opt.textContent = item;
-            
-            // Logika pencocokan: Jika teks di DB/Tabel sama dengan list, set SELECTED
-            if (item.trim() === selectedJenis.trim()) {
-                opt.selected = true;
-            }
-            selectJenis.appendChild(opt);
-        });
+
+    list.forEach(item => {
+        const opt = document.createElement('option'); 
+        const namaKendala = item.nama || item.nama_kendala; 
+        
+        opt.value = namaKendala;
+        opt.textContent = namaKendala;
+
+        if (selectedJenis && namaKendala.trim().toLowerCase() === selectedJenis.trim().toLowerCase()) {
+            opt.selected = true;
+        }
+        selectJenis.appendChild(opt);
+    });
+
+    const groupHW = document.getElementById('group-kode-hardware');
+    if (groupHW) {
+        groupHW.style.display = (tipe.toLowerCase() === 'hardware') ? 'block' : 'none';
     }
 }
 
-// Event Listener: Tipe Kendala diubah
-document.getElementById('ubah-status-tipe')?.addEventListener('change', function() {
-    updateJenisDropdown(this.value);
+document.getElementById('ubah-status-tipe')?.addEventListener('change', function () {
+    updateJenisDropdown(this.value, "");
 });
 
-// Event Listener: Toggle Detail Ketidaksesuaian
 document.getElementById('ubah-status-ketidaksesuaian')?.addEventListener('change', function() {
     const detailField = document.getElementById('ubah-status-ketidaksesuaian-detail');
-    detailField.style.display = this.checked ? 'block' : 'none';
-    if (!this.checked) detailField.value = "";
-});
-
-// Event Listener: "Terjadi di siapa (diri sendiri/orang lain)"
-document.getElementById('ubah-status-terjadi')?.addEventListener('change', function() {
-    const groupPenerima = document.getElementById('group-penerima-baru');  
-    if (this.value === 'orang_lain') {
-        groupPenerima.style.display = 'block';
-    } else {
-        groupPenerima.style.display = 'none';
-        document.getElementById('ubah-status-penerima').value = ""; 
+    if (detailField) {
+        detailField.style.display = this.checked ? 'block' : 'none';
+        if (!this.checked) detailField.value = "";
     }
 });
 
-// Listener untuk dropdown Semua / Beberapa / Satu
+document.getElementById('ubah-status-terjadi')?.addEventListener('change', togglePenerimaGroup);
 document.getElementById('ubah-terjadi-siapa')?.addEventListener('change', togglePenerimaGroup);
 
-// Fungsi pembantu agar logika show/hide tidak duplikat
 function togglePenerimaGroup() {
     const groupPenerima = document.getElementById('group-penerima-baru');
     const statusTerjadi = document.getElementById('ubah-status-terjadi').value;
     const terjadiSiapa = document.getElementById('ubah-terjadi-siapa').value;
 
-    // Tampilkan jika Status Terjadi = 'orang_lain' 
-    // ATAU Cakupan Terjadi Siapa = 'beberapa'
     if (statusTerjadi === 'orang_lain' || terjadiSiapa === 'beberapa') {
-        groupPenerima.style.display = 'block';
+        if (groupPenerima) groupPenerima.style.display = 'block';
     } else {
-        groupPenerima.style.display = 'none';
-        // Opsional: Reset nilai select penerima jika disembunyikan
-        // document.getElementById('ubah-status-penerima').value = ""; 
+        if (groupPenerima) {
+            groupPenerima.style.display = 'none';
+            const selectPenerima = document.getElementById('ubah-status-penerima');
+            if (selectPenerima) selectPenerima.value = "";
+        }
     }
 }
 
@@ -369,181 +370,149 @@ function openUbahStatus(requestId) {
     const row = document.querySelector(`tr[data-request-id="${requestId}"]`);
     if (!row) return;
 
-    // Ambil data identitas
     const idPeminta = row.getAttribute('data-id-peminta');
     const idPenerima = row.getAttribute('data-penerima-id');
     const idStatus = parseInt(row.getAttribute('data-id-status'));
-    const terjadiPada = row.getAttribute('data-terjadi-pada');
-    
-    // Ambil elemen badge S/H dari tabel (Copy element-nya agar class-nya ikut)
-    const badgeUrgency = row.querySelector('td:nth-child(5)').innerHTML; // Mengambil HTML di kolom tipe
-    const shCodeText = row.querySelector('.urgency-code')?.textContent.trim() || "";
-    
-    // Ambil teks dari kolom tabel
+    const terjadiPada = row.getAttribute('data-terjadi-pada') || "";
     const cells = row.querySelectorAll('td');
-    const namaPeminta = cells[2].textContent.trim();
-    const namaPenerima = cells[3].textContent.trim();
+
+    const badgeUrgency = cells[4].innerHTML; 
+   
+    let tipeKey = row.getAttribute('data-tipe-kendala') || 
+                  row.querySelector('.urgency-code')?.textContent?.trim() || 
+                  '';
+
     const jenisTeks = cells[5].textContent.trim();
 
-    // 1. Set Dropdown Tipe (Logic: Cek kata 'software' di dalam kode)
     const selectTipe = document.getElementById('ubah-status-tipe');
-    const tipeKey = shCodeText.toLowerCase().includes('software') ? 'software' : 'hardware';
-    selectTipe.value = tipeKey;
-    
-    // 2. Isi Dropdown Jenis & Handle Kode Hardware
-    updateJenisDropdown(tipeKey, jenisTeks);
-
-    // Jika hardware, isi input kode hardware jika datanya ada di atribut row
-    if (tipeKey === 'hardware') {
-        document.getElementById('ubah-status-kode-hw').value = row.getAttribute('data-kode-hw') || "";
+    if (selectTipe) { 
+        const normalizedTipe = tipeKey.toLowerCase().trim();
+        selectTipe.value = normalizedTipe; 
+         
+        updateJenisDropdown(normalizedTipe, jenisTeks); 
     }
 
-    // 3. Set Terjadi Di & Penerima
+    const inputKodeHw = document.getElementById('ubah-status-kode-hw');
+    const groupHW = document.getElementById('group-kode-hardware');
+    if (inputKodeHw) {
+        const valKode = row.getAttribute('data-kode-hw') || "";
+        inputKodeHw.value = valKode; 
+        if (groupHW) groupHW.style.display = (tipeKey.toLowerCase() === 'hardware') ? 'block' : 'none';
+    }
+
     const selectTerjadi = document.getElementById('ubah-status-terjadi');
-    const groupPenerima = document.getElementById('group-penerima-baru');
     const selectPenerima = document.getElementById('ubah-status-penerima');
 
     if (idPeminta === idPenerima) {
-        selectTerjadi.value = 'diri_sendiri';
-        groupPenerima.style.display = 'none';
+        if (selectTerjadi) selectTerjadi.value = 'diri_sendiri';
     } else {
-        selectTerjadi.value = 'orang_lain';
-        groupPenerima.style.display = 'block';
-        selectPenerima.value = idPenerima;
+        if (selectTerjadi) selectTerjadi.value = 'orang_lain';
+        if (selectPenerima) selectPenerima.value = idPenerima;
     }
+    togglePenerimaGroup();
 
-    // 4. Set Dropdown "Edit Terjadi Pada Siapa Saja" (Cakupan)
     const selectTerjadiSiapa = document.getElementById('ubah-terjadi-siapa');
     if (selectTerjadiSiapa) {
-        selectTerjadiSiapa.value = terjadiPada || "";
+        selectTerjadiSiapa.value = terjadiPada;
     }
 
-    // 5. Set Status Radio
     const valStatus = (idStatus === 4) ? 'done' : 'on-repair';
-    const radioToClick = document.querySelector(`input[name="status"][value="${valStatus}"]`);
-    if (radioToClick) radioToClick.checked = true;
+    document.querySelector(`input[name="status"][value="${valStatus}"]`)?.click();
 
-    // 6. Isi field lainnya
-    document.getElementById('ubah-status-deskripsi-val').value = row.getAttribute('data-deskripsi') || "";
     document.getElementById('ubah-status-tindakan').value = row.getAttribute('data-tindakan-it') || "";
     document.getElementById('ubah-status-hasil').value = row.getAttribute('data-hasil-it') || "";
-    
-    // --- UPDATE UI READ ONLY (Tampilan Atas Modal) ---
-    document.getElementById('ubah-status-toko-val').textContent = cells[1].textContent.trim();
+    document.getElementById('ubah-status-deskripsi-val').value = row.getAttribute('data-deskripsi') || "";
+
     document.getElementById('ubah-status-req-val').textContent = requestId;
-    document.getElementById('ubah-status-peminta-val').textContent = namaPeminta;
-    document.getElementById('ubah-status-penerima-val').textContent = namaPenerima;
+    document.getElementById('ubah-status-toko-val').textContent = cells[1].textContent.trim();
+    document.getElementById('ubah-status-peminta-val').textContent = cells[2].textContent.trim();
+    document.getElementById('ubah-status-penerima-val').textContent = cells[3].textContent.trim();
     document.getElementById('ubah-status-terjadi-val').textContent = terjadiPada;
-    
-    const kodeHardware = row.getAttribute('data-kode-hw') || '';
-    document.getElementById('ubah-status-kode-val').textContent = kodeHardware;
-    
-    // Gunakan innerHTML agar Badge S/H berwarna muncul di modal
+    document.getElementById('ubah-status-kode-val').textContent = row.getAttribute('data-kode-hw') || "-";
     document.getElementById('ubah-status-tipe-val').innerHTML = badgeUrgency;
     document.getElementById('ubah-status-jenis-val').textContent = jenisTeks;
-
-    togglePenerimaGroup();
 
     currentRequestId = requestId;
     openModal('ubahStatusModal');
 }
 
-// Event Listener Tombol Lanjut (Submit Modal Ubah Status)
 document.getElementById('btn-submit-status').addEventListener('click', function() {
     const row = document.querySelector(`tr[data-request-id="${currentRequestId}"]`);
     if (!row) return;
 
+    const tindakan = document.getElementById('ubah-status-tindakan').value.trim();
+    const hasil = document.getElementById('ubah-status-hasil').value.trim();
+    const selectedStatus = document.querySelector('input[name="status"]:checked');
+    
     const tipe = document.getElementById('ubah-status-tipe').value;
     const idJenis = document.getElementById('ubah-status-jenis').value; 
-    const kodeHardware = document.getElementById('ubah-status-kode-hw').value;  
     const terjadi = document.getElementById('ubah-status-terjadi').value;
     const selectPenerima = document.getElementById('ubah-status-penerima');
     
-    let finalPenerimaId;
-    let finalPenerimaNama;
+    let finalPenerimaId, finalPenerimaNama;
+
+    if (!tindakan) { alert("Tindakan wajib diisi!"); return; }
+    if (!hasil) { alert("Hasil wajib diisi!"); return; }
+    if (!selectedStatus) { alert("Pilih status (Done / On Repair)!"); return; }
 
     if (terjadi === 'orang_lain') {
         finalPenerimaId = selectPenerima.value;
-        finalPenerimaNama = selectPenerima.options[selectPenerima.selectedIndex].text;
-    } else {
-        // Jika diri sendiri, gunakan data-id-peminta dari row tabel
+        finalPenerimaNama = selectPenerima.options[selectPenerima.selectedIndex]?.text || "";
+    } else { 
         finalPenerimaId = row.getAttribute('data-id-peminta');
         finalPenerimaNama = document.getElementById('ubah-status-peminta-val').textContent;
     }
 
-    // Validasi Dasar
-    if (!idJenis) { alert("Jenis kendala tidak boleh kosong!"); return; }
     if (terjadi === 'orang_lain' && !finalPenerimaId) { alert("Pilih penerima baru!"); return; }
 
-    // Simpan ke tempStatusData (Menyertakan kode_hw)
+    const levelUrgensi = document.getElementById('ubah-status-urgensi-input').value;
+
     tempStatusData = {
         request_id: currentRequestId,
-        tindakan: document.getElementById('ubah-status-tindakan').value,
-        hasil: document.getElementById('ubah-status-hasil').value,
+        tindakan: tindakan,
+        hasil: hasil,
         tipe: tipe,
         jenis: idJenis,
-        kodeHardware: kodeHardware, 
+        kodeHardware: document.getElementById('ubah-status-kode-hw').value, 
         penerima_id: finalPenerimaId,
         terjadi_pada: document.getElementById('ubah-terjadi-siapa').value,
-        status_baru: document.querySelector('input[name="status"]:checked').value,
+        level_urgensi: levelUrgensi,
+        status_baru: selectedStatus.value,
         ketidaksesuaian_detail: document.getElementById('ubah-status-ketidaksesuaian').checked ? 
                                 document.getElementById('ubah-status-ketidaksesuaian-detail').value : null
     };
 
-    // ISI DATA READ-ONLY DI PASSWORD MODAL SEBELUM DIBUKA
     document.getElementById('password-peminta-val').textContent = document.getElementById('ubah-status-peminta-val').textContent;
     document.getElementById('password-user-val').textContent = finalPenerimaNama;
-    document.getElementById('password-action-val').textContent = tempStatusData.tindakan || '';
-    document.getElementById('password-result-val').textContent = tempStatusData.hasil || '';
+    document.getElementById('password-action-val').textContent = tempStatusData.tindakan;
+    document.getElementById('password-result-val').textContent = tempStatusData.hasil;
     document.getElementById('password-status-val').textContent = tempStatusData.status_baru.toUpperCase();
 
-    // TAMBAHKAN INI: Update label input password agar menyebutkan nama user
     const pwdLabel = document.querySelector('.password-section .form-label');
     if (pwdLabel) {
         pwdLabel.innerHTML = `Masukkan Password User <strong style="color: #0056b3;">${finalPenerimaNama}</strong>:`;
     }
 
     closeModal('ubahStatusModal');
+    modal('ubahStatusModal', 'close'); 
+    modal('passwordModal', 'open');
 });
 
 $(document).ready(function() {
-    $('.select2-multiple').select2({
-        placeholder: "-- Pilih Toko --",
-        allowClear: true,
-        closeOnSelect: false, // Penting: Agar tidak tertutup pas klik checkbox
-        width: '100%',
-        templateResult: function (data) {
-            // Jika ini placeholder, jangan kasih checkbox
-            if (!data.id) return data.text;
-
-            // Buat elemen checkbox + teks
-            var $result = $(
-                '<div class="checkbox-item">' +
-                    '<input type="checkbox" ' + (data.selected ? 'checked' : '') + ' /> ' +
-                    '<label style="margin-left: 10px; cursor: pointer;">' + data.text + '</label>' +
-                '</div>'
-            );
-            return $result;
-        },
-        templateSelection: function (data) {
-            // Tulisan yang muncul di kotak dropdown setelah dipilih
-            return data.text;
-        }
-    });
-
-    // Event agar saat baris diklik, checkbox-nya sinkron
-    $('.select2-multiple').on('select2:select select2:unselect', function (e) {
-        $(this).select2('open'); // Paksa dropdown tetap terbuka
-    });
+    if ($.fn.select2) {
+        $('.select2-multiple').select2({
+            placeholder: "-- Pilih Toko --",
+            allowClear: true,
+            width: '100%'
+        });
+    }
 });
-
-// Saat menangkap data untuk dikirim ke process_request.php
+ 
 function getFormData() {
     const selectedToko = $('#toko').val();  
 
     if (selectedToko && selectedToko.length > 0) {
-        selectedToko.forEach(id => {
-            // Kirim ke PHP dengan nama toko_id[]
+        selectedToko.forEach(id => { 
             formData.append('toko_id[]', id); 
         });
     }
@@ -707,18 +676,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionBtn = document.querySelector('.action-btn');
         if (!actionBtn) return;
 
-        // toggle close
         if (currentDropdown) {
             currentDropdown.remove();
             currentDropdown = null;
             return;
         }
 
+        const selectedCheckboxes = document.querySelectorAll(
+            '.queue-item input[type="checkbox"]:checked, #all-request-table input[type="checkbox"]:checked'
+        );
+
+        let hasNonLainLain = false;
+
+        selectedCheckboxes.forEach(cb => { 
+            let jenis = cb.getAttribute('data-jenis') || "";
+ 
+            if (!jenis) {
+                const row = cb.closest('tr');
+                if (row) jenis = row.cells[5]?.textContent.trim() || "";
+            }
+
+            if (jenis.toLowerCase() !== 'lain-lain') {
+                hasNonLainLain = true;
+            }
+        });
+
         currentDropdown = document.createElement('div');
         currentDropdown.className = 'action-dropdown';
+         
+        const urgencyAttr = hasNonLainLain ? 'data-disabled="true" style="opacity: 0.5; cursor: not-allowed;"' : '';
+
         currentDropdown.innerHTML = `
             <div class="dropdown-option" data-action="accept">Accept</div>
-            <div class="dropdown-option" data-action="change-urgency">Ganti Level Urgensi</div>
+            <div class="dropdown-option" data-action="change-urgency" ${urgencyAttr}>
+                Ganti Level <br> Urgensi ${hasNonLainLain ? '<br><small style="color:red; font-size:10px;">(Khusus Lain-lain)</small>' : ''}
+            </div>
         `;
 
         const rect = actionBtn.getBoundingClientRect();
@@ -731,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
             border-radius: var(--radius-sm);
             box-shadow: 0 4px 12px var(--shadow-medium);
             z-index: 1000;
-            min-width: 180px;
+            min-width: 120px;
             overflow: hidden;
             animation: fadeIn 0.2s ease;
         `;
@@ -741,27 +733,28 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDropdown.querySelectorAll('.dropdown-option').forEach((option, idx) => {
             option.style.cssText = `
                 padding: 10px 15px;
-                cursor: pointer;
+                cursor: ${option.dataset.disabled ? 'not-allowed' : 'pointer'};
                 font-size: 0.85rem;
                 color: var(--dark-gray);
                 border-bottom: 1px solid var(--fourth);
                 transition: var(--transition);
             `;
 
-            option.addEventListener('mouseenter', () => {
-                option.style.backgroundColor = 'var(--fourth)';
-            });
-
-            option.addEventListener('mouseleave', () => {
-                option.style.backgroundColor = 'white';
-            });
+            if (!option.dataset.disabled) {
+                option.addEventListener('mouseenter', () => {
+                    option.style.backgroundColor = 'var(--fourth)';
+                });
+                option.addEventListener('mouseleave', () => {
+                    option.style.backgroundColor = 'white';
+                });
+            }
 
             option.addEventListener('click', (ev) => {
                 ev.stopPropagation();
+                if (option.dataset.disabled === "true") return;
 
-                // 🔥 AMBIL CHECKBOX TERBARU DI SINI
                 const selected = document.querySelectorAll(
-                    '.queue-item input[type="checkbox"]:checked'
+                    '.queue-item input[type="checkbox"]:checked, #all-request-table input[type="checkbox"]:checked'
                 );
 
                 handleBulkAction(option.dataset.action, selected);
@@ -774,10 +767,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 option.style.borderBottom = 'none';
             }
         });
-
-        // klik luar → close
-        setTimeout(() => {
-        }, 10);
     }
 
     const selectAllBtn = document.getElementById('select-all');
@@ -803,42 +792,42 @@ document.addEventListener('DOMContentLoaded', () => {
         list.innerHTML = '';
 
         checkboxes.forEach(cb => {
-            let store, peminta, penerima, shBadge, jenis;
+        let store, peminta, penerima, shBadge, jenis;
 
-            // Cek apakah checkbox berasal dari CARD (Queue Items)
-            const card = cb.closest('.queue-item');
-            // Cek apakah checkbox berasal dari TABEL (All Request)
-            const row = cb.closest('tr');
+        const card = cb.closest('.queue-item'); 
+        const row = cb.closest('tr');
 
-            if (card) {
-                // Ambil data dari atribut data- button detail yang ada di dalam card
-                const btn = card.querySelector('.open-detail-btn');
-                store = card.querySelector('.queue-store')?.textContent.trim() || '-';
-                peminta = card.querySelector('.queue-name')?.textContent.trim() || '-';
-                penerima = btn.getAttribute('data-penerima') || '-';
-                shBadge = btn.getAttribute('data-sh') || '-';
-                jenis = btn.getAttribute('data-jenis') || '-';
-            } else if (row) {
-                // Ambil data dari kolom tabel (DataTables)
-                store = row.cells[1].textContent.trim();
-                peminta = row.cells[2].textContent.trim();
-                penerima = row.cells[3].textContent.trim();
-                shBadge = row.cells[4].innerHTML;
-                jenis = row.cells[5].textContent.trim();
-            }
+        if (card) { 
+            // Mengambil data dari atribut data- pada tombol detail (lebih akurat)
+            const btn = card.querySelector('.open-detail-btn');
+            
+            // Sesuai permintaan: Kolom toko diisi dari data-toko (Nama Toko)
+            store = btn.getAttribute('data-toko') || '-'; 
+            peminta = btn.getAttribute('data-peminta') || '-';
+            penerima = btn.getAttribute('data-penerima') || '-';
+            shBadge = btn.getAttribute('data-sh') || '-';
+            jenis = btn.getAttribute('data-jenis') || '-';
+        } else if (row) {
+            // Ambil data dari kolom tabel (DataTables)
+            store = row.cells[1].textContent.trim();
+            peminta = row.cells[2].textContent.trim();
+            penerima = row.cells[3].textContent.trim();
+            shBadge = row.cells[4].innerHTML;
+            jenis = row.cells[5].textContent.trim();
+        }
 
-            if (store) {
-                list.insertAdjacentHTML('beforeend', `
-                    <tr>
-                        <td><b>${store}</b></td>
-                        <td>${peminta}</td>
-                        <td>${penerima}</td>
-                        <td><div class="sh-badge-wrapper">${shBadge}</div></td>
-                        <td>${jenis}</td>
-                    </tr>
-                `);
-            }
-        });
+        if (store) {
+            list.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td><b>${store}</b></td>
+                    <td>${peminta}</td>
+                    <td>${penerima}</td>
+                    <td><div class="sh-badge-wrapper">${shBadge}</div></td>
+                    <td>${jenis}</td>
+                </tr>
+            `);
+        }
+    });
 
         // Update Judul Modal
         const titleEl = document.getElementById('bulkModalTitle');
@@ -846,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (action === 'accept') {
             titleEl.textContent = 'Konfirmasi Accept Request';
-            btnConfirm.textContent = 'Accept Now';
+            btnConfirm.textContent = 'Accept All';
             btnConfirm.className = 'btn-accept'; // Sesuaikan class warna
         } else {
             titleEl.textContent = 'Konfirmasi Ganti Urgensi';
@@ -910,8 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // DATATABLES EVENT HANDLERS
     // =========================
     
-    $(document).ready(function() {
-        // Initialize DataTable
+    $(document).ready(function() { 
         const table = $('#requestTable').DataTable({
             responsive: true,
             autoWidth: false,
@@ -922,6 +910,10 @@ document.addEventListener('DOMContentLoaded', () => {
             searching: true,
             info: true,
             columnDefs: [
+                { 
+                    targets: [0, 3, 4],  
+                    className: 'all' 
+                },
                 { 
                     orderable: false, 
                     targets: [8] 
@@ -938,55 +930,76 @@ document.addEventListener('DOMContentLoaded', () => {
                 zeroRecords: "Data tidak ditemukan",
                 info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
                 paginate: { previous: "‹", next: "›" }
+            },
+                drawCallback: function() {
+                $(this).DataTable().columns.adjust().responsive.recalc();
             }
-        });
-        
-        // Adjust DataTable on window resize
-        window.addEventListener('resize', () => {
-            if (table) {
-                table.columns.adjust().responsive.recalc();
-            }
-        });
+        }); 
+        setTimeout(() => {
+            if (window.doneTable) window.doneTable.columns.adjust().responsive.recalc();
+            if (window.canceledTable) window.canceledTable.columns.adjust().responsive.recalc();
+        }, 500);
+ 
     });
-});
+}); 
 
 function updateUrgencyAutomaticly() {
     const dampak = document.getElementById('ubah-terjadi-siapa').value;
-    const tampilanUrgensi = document.getElementById('tampilan-urgensi');
-    const hiddenUrgensi = document.getElementById('ubah-urgensi');
-
+    const badge = document.getElementById('ubah-status-urgensi-badge');
+    const hiddenInput = document.getElementById('ubah-status-urgensi-input');
+    
     let level = "";
     let color = "";
+    let label = "";
 
-    // Logika Otomatis Sistem
     switch (dampak) {
-        case 'semua':
-            level = "Very-High";
-            color = "#d9534f"; // Merah
+        case "Semua Orang/Toko":
+            level = "Very High";
+            color = "#d32f2f"; // Merah
+            label = "Very High";
             break;
-        case 'beberapa':
+        case "Beberapa Orang":
             level = "High";
-            color = "#f0ad4e"; // Oranye
+            color = "#f57c00"; // Oranye
+            label = "High";
             break;
-        case 'satu':
+        case "Diri Sendiri":
             level = "Medium";
-            color = "#5bc0de"; // Biru
+            color = "#fbc02d"; // Kuning
+            label = "Medium";
             break;
-        case 'opsi_lain':
+        case "Masih Dapat Bekerja Dengan Cara Lain":
             level = "Low";
-            color = "#5cb85c"; // Hijau
+            color = "#388e3c"; // Hijau
+            label = "Low";
             break;
         default:
             level = "";
-            color = "#666";
+            color = "transparent";
+            label = "";
     }
 
-    if (tampilanUrgensi && hiddenUrgensi) {
-        tampilanUrgensi.value = level ? level.replace('-', ' ') : ""; 
-        tampilanUrgensi.style.color = color;
-        hiddenUrgensi.value = level; // Nilai ini yang akan masuk ke database
+    // Update Input Hidden untuk Database
+    hiddenInput.value = level;
+
+    // Update Visual Badge
+    if (level !== "") {
+        badge.textContent = `(${label})`;
+        badge.style.backgroundColor = color;
+        badge.style.color = "white";
+        badge.style.padding = "2px 8px";
+        badge.style.borderRadius = "4px";
+        badge.style.fontSize = "11px";
+        badge.style.marginLeft = "5px";
+        badge.style.display = "inline-block";
+    } else {
+        badge.style.display = "none";
     }
 }
+ 
+$(document).ready(function() {
+    $('#ubah-terjadi-siapa').on('change', updateUrgencyAutomatically);
+});
 
 // Add CSS animations
 const style = document.createElement('style');
@@ -1039,9 +1052,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize animations
     initAnimations(); 
     
-    // Dashboard action dropdown functionality (jika ada di halaman)
-    initActionDropdown();
-    
     // Dashboard select all functionality (jika ada di halaman)
     initSelectAll();
     
@@ -1088,72 +1098,65 @@ function initAnimations() {
     });
 }
 
-// ====== ADAPTER DATA DARI PHP ======
-let unratedRequests = [];
-
-if (typeof unratedRequestsRaw !== 'undefined') {
-    unratedRequests = unratedRequestsRaw.map(r => ({
-        id: r.id,
-        title: r.jenis_kendala || '-',
-        staff: r.staff_name || '-',
-        date: formatDate(r.input_datetime),
-        deskripsi: r.description || '-',
-        hasilService: r.hasil_it || '-',
-        userRating: 0
-    }));
-}
-
-// ====== HELPER ======
-function formatDate(dt) {
-    if (!dt) return '-';
-    const d = new Date(dt);
-    return d.toLocaleDateString('id-ID') + ' ' + d.toLocaleTimeString('id-ID');
-}
-
 // ========== UNRATED MODAL FUNCTIONS ==========
 function updateUnratedCount() {
     const badge = document.getElementById('unratedCount');
-    if (!badge) return;
-
-    badge.textContent = unratedRequests.length;
-
-    if (unratedRequests.length > 0) {
-        badge.classList.add('pulse');
-        badge.style.display = 'inline-block';
-    } else {
-        badge.classList.remove('pulse');
-        badge.style.display = 'none';
+    if (badge) {
+        badge.textContent = unratedRequests.length;
+        if (unratedRequests.length > 0) {
+            badge.classList.add('pulse');
+        } else {
+            badge.classList.remove('pulse');
+        }
     }
 }
 
 function lihatUnrated() {
+    console.log('Membuka modal unrated');
     openUnratedModal();
 }
 
 function openUnratedModal() {
     const modal = document.getElementById('unratedModal');
-    if (!modal) return;
-
+    if (!modal) {
+        console.error('Modal element not found!');
+        return;
+    }
+    
+    // Add modal-open class to body for blur effect
     document.body.classList.add('modal-open');
+    
+    // Show modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-
+    
+    // Render content
     renderUnratedList();
+    
+    console.log('Modal opened successfully');
 }
 
 function closeUnratedModal() {
     const modal = document.getElementById('unratedModal');
     if (!modal) return;
-
+    
+    // Remove modal-open class
     document.body.classList.remove('modal-open');
+    
+    // Hide modal
     modal.classList.remove('active');
     document.body.style.overflow = 'auto';
+    
+    console.log('Modal closed');
 }
 
 function renderUnratedList() {
     const listContainer = document.getElementById('unratedList');
-    if (!listContainer) return;
-
+    if (!listContainer) {
+        console.error('unratedList element not found!');
+        return;
+    }
+    
     if (unratedRequests.length === 0) {
         listContainer.innerHTML = `
             <div class="empty-state">
@@ -1164,10 +1167,10 @@ function renderUnratedList() {
         `;
         return;
     }
-
+    
     let html = '';
-
-    unratedRequests.forEach(request => {
+    
+    unratedRequests.forEach((request) => {
         html += `
             <div class="unrated-item" data-id="${request.id}">
                 <div class="unrated-item-header">
@@ -1180,7 +1183,8 @@ function renderUnratedList() {
                     </div>
                     <span class="unrated-date">Selesai</span>
                 </div>
-
+                
+                <!-- DESKRIPSI KENDALA -->
                 <div class="service-detail">
                     <div class="detail-header">
                         <i class="fas fa-exclamation-circle"></i>
@@ -1190,7 +1194,8 @@ function renderUnratedList() {
                         <p>${request.deskripsi}</p>
                     </div>
                 </div>
-
+                
+                <!-- HASIL SERVICE -->
                 <div class="service-detail">
                     <div class="detail-header">
                         <i class="fas fa-check-circle"></i>
@@ -1200,29 +1205,29 @@ function renderUnratedList() {
                         <p>${request.hasilService}</p>
                     </div>
                 </div>
-
+                
                 <div class="rating-section">
                     <div class="rating-title">Berikan Rating (1-5 bintang):</div>
-
+                    
                     <div class="rating-stars" id="stars-${request.id}">
-                        <i class="fas fa-star" onclick="setRating(${request.id},1)"></i>
-                        <i class="fas fa-star" onclick="setRating(${request.id},2)"></i>
-                        <i class="fas fa-star" onclick="setRating(${request.id},3)"></i>
-                        <i class="fas fa-star" onclick="setRating(${request.id},4)"></i>
-                        <i class="fas fa-star" onclick="setRating(${request.id},5)"></i>
+                        <i class="fas fa-star" data-value="1" onclick="setRating(${request.id}, 1)"></i>
+                        <i class="fas fa-star" data-value="2" onclick="setRating(${request.id}, 2)"></i>
+                        <i class="fas fa-star" data-value="3" onclick="setRating(${request.id}, 3)"></i>
+                        <i class="fas fa-star" data-value="4" onclick="setRating(${request.id}, 4)"></i>
+                        <i class="fas fa-star" data-value="5" onclick="setRating(${request.id}, 5)"></i>
                     </div>
-
+                    
                     <div class="rating-comment">
-                        <textarea id="comment-${request.id}"
-                                  rows="2"
-                                  placeholder="Tulis komentar atau feedback (opsional)..."></textarea>
+                        <textarea id="comment-${request.id}" 
+                                  placeholder="Tulis komentar atau feedback (opsional)..."
+                                  rows="2"></textarea>
                     </div>
-
+                    
                     <div class="rating-actions">
-                        <button class="rating-btn submit"
-                                id="submit-btn-${request.id}"
-                                onclick="submitRating(${request.id})"
-                                disabled>
+                        <button class="rating-btn submit" 
+                                onclick="submitRating(${request.id})" 
+                                disabled 
+                                id="submit-btn-${request.id}">
                             <i class="fas fa-check"></i> Kirim Rating
                         </button>
                     </div>
@@ -1230,28 +1235,51 @@ function renderUnratedList() {
             </div>
         `;
     });
-
+    
     listContainer.innerHTML = html;
+    
+    // Highlight stars if already rated
+    unratedRequests.forEach(request => {
+        if (request.userRating > 0) {
+            highlightStars(request.id, request.userRating);
+            enableSubmitButton(request.id);
+        }
+    });
 }
 
 function setRating(requestId, rating) {
-    const request = unratedRequests.find(r => r.id === requestId);
-    if (!request) return;
-
-    request.userRating = rating;
-
+    console.log('Setting rating:', requestId, rating);
+    
+    // Highlight stars
     highlightStars(requestId, rating);
+    
+    // Update request data
+    const requestIndex = unratedRequests.findIndex(r => r.id === requestId);
+    if (requestIndex !== -1) {
+        unratedRequests[requestIndex].userRating = rating;
+    }
+    
+    // Enable submit button
     enableSubmitButton(requestId);
 }
 
 function highlightStars(requestId, rating) {
     const starsContainer = document.getElementById(`stars-${requestId}`);
-    if (!starsContainer) return;
-
+    if (!starsContainer) {
+        console.error('Stars container not found for ID:', requestId);
+        return;
+    }
+    
     const stars = starsContainer.querySelectorAll('.fas.fa-star');
-
+    
     stars.forEach((star, index) => {
-        star.style.color = index < rating ? '#FFA726' : '#ddd';
+        if (index < rating) {
+            star.classList.add('active');
+            star.style.color = '#FFA726';
+        } else {
+            star.classList.remove('active');
+            star.style.color = '#ddd';
+        }
     });
 }
 
@@ -1259,46 +1287,76 @@ function enableSubmitButton(requestId) {
     const submitBtn = document.getElementById(`submit-btn-${requestId}`);
     if (submitBtn) {
         submitBtn.disabled = false;
+        console.log('Submit button enabled for request:', requestId);
+    } else {
+        console.error('Submit button not found for ID:', requestId);
     }
 }
 
 function submitRating(requestId) {
     const requestIndex = unratedRequests.findIndex(r => r.id === requestId);
-    if (requestIndex === -1) return;
-
+    if (requestIndex === -1) {
+        console.error('Request not found:', requestId);
+        return;
+    }
+    
     const request = unratedRequests[requestIndex];
     const comment = document.getElementById(`comment-${requestId}`)?.value || '';
     const rating = request.userRating || 0;
-
+    
     if (rating === 0) {
         alert('Pilih rating terlebih dahulu!');
         return;
     }
-
+    
+    // Show confirmation
     if (!confirm(`Kirim rating ${rating} bintang untuk "${request.title}"?`)) {
         return;
     }
-
-    // TODO: AJAX ke backend di sini
-
-    showNotification(
-        `Rating ${rating} bintang berhasil dikirim untuk: ${request.title}`,
-        'success'
-    );
-
+    
+    // Simulate API call
+    console.log('Submitting rating:', { 
+        requestId, 
+        rating, 
+        comment,
+        deskripsi: request.deskripsi,
+        hasilService: request.hasilService 
+    });
+    
+    // Show success notification
+    showNotification(`Rating ${rating} bintang berhasil dikirim untuk: ${request.title}`, 'success');
+    
+    // Remove from list after delay
     setTimeout(() => {
         removeUnratedRequest(requestId);
-    }, 800);
+    }, 1500);
+}
+
+function skipRating(requestId) {
+    const requestIndex = unratedRequests.findIndex(r => r.id === requestId);
+    if (requestIndex === -1) return;
+    
+    const request = unratedRequests[requestIndex];
+    
+    if (!confirm(`Yakin ingin melewatkan rating untuk "${request.title}"?\nAnda tidak bisa memberikan rating lagi nanti.`)) {
+        return;
+    }
+    
+    showNotification(`Rating untuk "${request.title}" dilewatkan`, 'info');
+    
+    setTimeout(() => {
+        removeUnratedRequest(requestId);
+    }, 1000);
 }
 
 function removeUnratedRequest(requestId) {
+    // Remove from array
     unratedRequests = unratedRequests.filter(r => r.id !== requestId);
+    
+    // Update UI
     updateUnratedCount();
     renderUnratedList();
 }
-
-// ====== INIT BADGE ======
-document.addEventListener('DOMContentLoaded', updateUnratedCount);
 
 // ========== REQUEST MODAL FUNCTIONS ==========
 function ajukanRequest(type) {
@@ -1356,20 +1414,15 @@ function toggleHardwareFields(isHardware) {
         const inputHW = document.getElementById('kode_hardware');
         if(inputHW) inputHW.value = '';
     }
-
-    // 2. Isi Dropdown Jenis Kendala secara Dinamis
+ 
     const tipe = isHardware ? 'Hardware' : 'Software';  
-    
-    // Ambil data dari variabel global dataKendala
+     
     const listKendala = dataKendala[tipe] || [];
-
-    // Kosongkan dropdown sebelum diisi ulang
+ 
     selectJenisKendala.innerHTML = '<option value="">-- Pilih Jenis Kendala --</option>';
-
-    // Loop data untuk membuat elemen <option>
+ 
     listKendala.forEach(item => {
-        const option = document.createElement('option');
-        // Gunakan nama_kendala sesuai struktur SQL kamu
+        const option = document.createElement('option'); 
         option.value = item.nama; 
         option.textContent = item.nama;
         selectJenisKendala.appendChild(option);
@@ -1472,7 +1525,7 @@ function submitRequestForm(event) {
     const form = event.target;
     const formData = new FormData();
 
-    // 1. Validasi Toko (Gunakan querySelector yang spesifik ke form ini)
+    // 1. Ambil Multi-Toko
     const selectedCheckboxes = form.querySelectorAll('input[name="toko_id[]"]:checked');
     if (selectedCheckboxes.length === 0) {
         alert("Peringatan: Anda harus memilih minimal satu Toko!");
@@ -1482,6 +1535,7 @@ function submitRequestForm(event) {
 
     // 2. User Penerima
     const radioUntukSiapa = form.querySelector('input[name="untuk_siapa"]:checked');
+    // FIX: Typo diperbaiki dari radioUntukSiama menjadi radioUntukSiapa
     const untukSiapa = radioUntukSiapa ? radioUntukSiapa.value : 'diri_sendiri';
     let userPenerimaId = "";
 
@@ -1492,22 +1546,36 @@ function submitRequestForm(event) {
             alert("Pilih user penerima!"); return;
         }
     }
-
     formData.append('untuk_siapa', untukSiapa);
     formData.append('user_penerima', userPenerimaId);
     
-    // 3. Ambil Data Lain (Pastikan ID-nya benar di HTML)
-    formData.append('tipe_kendala', form.querySelector('input[name="tipe_kendala"]:checked').value);
-    formData.append('jenis_kendala', document.getElementById('jenis_kendala').value);
-    formData.append('kode_hardware', document.getElementById('kode_hardware').value);
-    formData.append('terjadi_pada', document.getElementById('terjadi_di').value); 
-    formData.append('deskripsi', document.getElementById('deskripsi').value);
+    // 3. Ambil Data Lain (Termasuk Terjadi Pada)
+    const tipeEl = form.querySelector('input[name="tipe_kendala"]:checked');
+    formData.append('tipe_kendala', tipeEl ? tipeEl.value : '-');
+    formData.append('jenis_kendala', document.getElementById('jenis_kendala')?.value || '-');
+    formData.append('kode_hardware', document.getElementById('kode_hardware')?.value || '-');
+     
+    const terjadiPadaEl = document.getElementById('terjadi_di');
+    formData.append('terjadi_pada', terjadiPadaEl ? terjadiPadaEl.value : '-');
 
-    // 4. File
-    const fileInput = document.getElementById('fileUpload');
-    if (fileInput && fileInput.files.length > 0) {
-        formData.append('foto', fileInput.files[0]);
-    } 
+    const deskripsiEl = document.getElementById('deskripsi');
+    const deskripsiVal = deskripsiEl ? deskripsiEl.value.trim() : '';
+
+    if (deskripsiVal === '') {
+        alert("Deskripsi kendala wajib diisi!");
+        if(deskripsiEl) deskripsiEl.focus();
+        return;
+    }
+    formData.append('deskripsi', deskripsiVal);
+ 
+    // 4. File Upload
+    const fileInput = document.getElementById('upload_file');
+    if (fileInput && fileInput.files.length > 0) { 
+        formData.append('upload_file', fileInput.files[0]); 
+    }
+
+    const btn = document.getElementById('btn-final-submit');
+    if(btn) btn.disabled = true;
 
     fetch('direct/process_request.php', {
         method: 'POST',
@@ -1518,8 +1586,8 @@ function submitRequestForm(event) {
         try {
             return JSON.parse(text);
         } catch (err) {
-            console.error("Server Response bukan JSON:", text);
-            throw new Error("Server mengirim respon tidak valid (Error 500/HTML)");
+            console.error("Respon Server Mentah:", text); 
+            throw new Error("Server Error: Respon server tidak valid.");
         }
     })
     .then(data => {
@@ -1528,11 +1596,13 @@ function submitRequestForm(event) {
             location.reload();
         } else {
             alert("Gagal: " + data.message);
+            if(btn) btn.disabled = false;
         }
     })
     .catch(err => {
         console.error(err);
-        alert("Terjadi kesalahan sistem: " + err.message);
+        alert("Terjadi Kesalahan: " + err.message);
+        if(btn) btn.disabled = false;
     });
 }
 
@@ -1606,105 +1676,7 @@ function closeDashboardModal() {
         document.body.style.overflow = 'auto';
     }
 }
-
-// ========== ACTION DROPDOWN FUNCTIONS ==========
-function initActionDropdown() {
-    const actionBtn = document.querySelector('.action-btn');
-    if (!actionBtn) return; // Jika tidak ada di halaman ini, skip
-    
-    actionBtn.addEventListener('click', (event) => {
-        event.stopPropagation();
-        toggleActionDropdown();
-    });
-}
-
-function toggleActionDropdown() {
-    const actionBtn = document.querySelector('.action-btn');
-    if (!actionBtn) return;
-    
-    // Cek apakah ada item yang dipilih
-    const checkboxes = document.querySelectorAll('.queue-item input[type="checkbox"]:checked');
-    
-    // Hapus dropdown lama jika ada
-    if (currentDropdown) {
-        currentDropdown.remove();
-        currentDropdown = null;
-        return;
-    }
-    
-    // Buat dropdown baru
-    currentDropdown = document.createElement('div');
-    currentDropdown.className = 'action-dropdown';
-    currentDropdown.innerHTML = `
-        <div class="dropdown-option" data-action="accept">Accept</div>
-        <div class="dropdown-option" data-action="change-urgency">Ganti Level Urgensi</div>
-    `;
-    
-    // Styling dropdown
-    currentDropdown.style.cssText = `
-        position: fixed;
-        background: white;
-        border: 1px solid var(--light-gray);
-        border-radius: var(--radius-sm);
-        box-shadow: 0 4px 12px var(--shadow-medium);
-        z-index: 1000;
-        min-width: 180px;
-        overflow: hidden;
-        animation: fadeIn 0.2s ease;
-    `;
-    
-    // Posisikan dropdown di bawah tombol
-    const rect = actionBtn.getBoundingClientRect();
-    currentDropdown.style.top = `${rect.bottom + 5}px`;
-    currentDropdown.style.left = `${rect.left}px`;
-    
-    document.body.appendChild(currentDropdown);
-    
-    // Styling options
-    const options = currentDropdown.querySelectorAll('.dropdown-option');
-    options.forEach(option => {
-        option.style.cssText = `
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            color: var(--dark-gray);
-            border-bottom: 1px solid var(--fourth);
-            transition: var(--transition);
-        `;
-        
-        option.addEventListener('mouseenter', () => {
-            option.style.backgroundColor = 'var(--fourth)';
-        });
-        
-        option.addEventListener('mouseleave', () => {
-            option.style.backgroundColor = 'white';
-        });
-        
-        option.addEventListener('click', (e) => {
-            e.stopPropagation();
-            handleDropdownAction(option.getAttribute('data-action'), checkboxes);
-            currentDropdown.remove();
-            currentDropdown = null;
-        });
-    });
-    
-    // Hapus border bottom dari item terakhir
-    options[options.length - 1].style.borderBottom = 'none';
-    
-    // Close dropdown ketika klik di luar
-    const closeDropdownHandler = (e) => {
-        if (currentDropdown && !currentDropdown.contains(e.target) && e.target !== actionBtn) {
-            currentDropdown.remove();
-            currentDropdown = null;
-            document.removeEventListener('click', closeDropdownHandler);
-        }
-    };
-    
-    setTimeout(() => {
-        document.addEventListener('click', closeDropdownHandler);
-    }, 10);
-}
-
+ 
 function handleDropdownAction(action, checkboxes) {
     if (checkboxes.length === 0) {
         alert('Pilih setidaknya satu item dari antrian.');
@@ -1846,64 +1818,4 @@ function debugUnratedModal() {
     
     // Force open modal for testing
     openUnratedModal();
-}
-
-// Test function untuk debug
-function testSetRating() {
-    console.log('Testing setRating function...');
-    // Test rating untuk request pertama
-    if (unratedRequests.length > 0) {
-        const firstRequestId = unratedRequests[0].id;
-        console.log('Testing rating for request ID:', firstRequestId);
-        setRating(firstRequestId, 3);
-    }
-}
-
-// Test langsung dari console
-function debugRating() {
-    console.log('=== RATING DEBUG ===');
-    console.log('All unrated requests:', unratedRequests);
-    
-    // Cek apakah ada button submit
-    const submitButtons = document.querySelectorAll('.rating-btn.submit');
-    console.log('Submit buttons found:', submitButtons.length);
-    
-    submitButtons.forEach((btn, index) => {
-        console.log(`Button ${index}:`, {
-            id: btn.id,
-            disabled: btn.disabled,
-            innerHTML: btn.innerHTML
-        });
-    });
-    
-    // Test enable button
-    if (unratedRequests.length > 0) {
-        const firstId = unratedRequests[0].id;
-        enableSubmitButton(firstId);
-    }
-}
-
-// Tambah request baru untuk testing
-function addTestRequest() {
-    const newId = unratedRequests.length > 0 ? Math.max(...unratedRequests.map(r => r.id)) + 1 : 1;
-    
-    const newRequest = {
-        id: newId,
-        title: 'Software Installation',
-        date: new Date().toISOString().split('T')[0],
-        staff: 'Salman',
-        deskripsi: 'Membutuhkan instalasi software accounting terbaru untuk laporan bulanan',
-        hasilService: 'Menginstall software AccountingPro v3.2, melakukan konfigurasi database, mengatur hak akses user, dan memberikan training singkat penggunaan fitur baru.',
-        userRating: 0
-    };
-    
-    unratedRequests.push(newRequest);
-    updateUnratedCount();
-    
-    // Jika modal terbuka, update list
-    if (document.getElementById('unratedModal')?.classList.contains('active')) {
-        renderUnratedList();
-    }
-    
-    showNotification('Request testing ditambahkan!', 'info');
-}
+}  
