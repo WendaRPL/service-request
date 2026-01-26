@@ -11,7 +11,7 @@ ob_start();
     <button class="action-button add-user">+ Add User</button>
 
     <section class="user-management-section">
-        <!-- ⚠️ PENTING: container kosong -->
+        <!-- PENTING: container kosong -->
         <div class="accordion-container" id="userContainer">
             <p style="padding:20px;">Loading users...</p>
         </div>
@@ -58,8 +58,16 @@ ob_start();
                                 <option value="">-- Pilih Role --</option>
                             </select>
                         </div>
-                    </div>
 
+                        <div class="form-group">
+                            <label class="form-label">Status Akses:</label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="add-enable">
+                                    <span class="checkbox-custom"></span>
+                                    Akun Aktif (Enable)
+                                </label>
+                            </div>
+                        </div>
                 </div>
             </div>
 
@@ -106,6 +114,15 @@ ob_start();
                             <label>Role</label>
                             <select id="edit-role" class="form-select"></select>
                         </div>
+
+                        <div class="form-group">
+                                <label class="form-label">Status Akses:</label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="edit-enable">
+                                    <span class="checkbox-custom"></span>
+                                    Akun Aktif (Enable)
+                                </label>
+                            </div>
                     </div>
                 </div>
             </div>
