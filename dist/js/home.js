@@ -365,7 +365,9 @@ function togglePenerimaGroup() {
         }
     }
 }
-
+if (document.getElementById('ubah-terjadi-siapa').value !== "") {
+    updateUrgencyAutomaticly(); 
+}
 function openUbahStatus(requestId) {
     const row = document.querySelector(`tr[data-request-id="${requestId}"]`);
     if (!row) return;
@@ -377,6 +379,17 @@ function openUbahStatus(requestId) {
     const cells = row.querySelectorAll('td');
 
     const badgeUrgency = cells[4].innerHTML; 
+ 
+    const tipeValElement = document.getElementById('ubah-status-tipe-val');
+    if (tipeValElement) {
+        tipeValElement.innerHTML = badgeUrgency;  
+    }
+
+    const selectTerjadiSiapa = document.getElementById('ubah-terjadi-siapa');
+    if (selectTerjadiSiapa) {
+        selectTerjadiSiapa.value = terjadiPada;
+    }
+    updateUrgencyAutomaticly();
    
     let tipeKey = row.getAttribute('data-tipe-kendala') || 
                   row.querySelector('.urgency-code')?.textContent?.trim() || 
@@ -386,10 +399,14 @@ function openUbahStatus(requestId) {
 
     const selectTipe = document.getElementById('ubah-status-tipe');
     if (selectTipe) { 
-        const normalizedTipe = tipeKey.toLowerCase().trim();
-        selectTipe.value = normalizedTipe; 
-         
-        updateJenisDropdown(normalizedTipe, jenisTeks); 
+        let found = false;
+        Array.from(selectTipe.options).forEach(opt => {
+            if (opt.value.toLowerCase() === tipeKey.toLowerCase().trim()) {
+                selectTipe.value = opt.value; 
+                found = true;
+            }
+        }); 
+        updateJenisDropdown(selectTipe.value, jenisTeks); 
     }
 
     const inputKodeHw = document.getElementById('ubah-status-kode-hw');
@@ -409,12 +426,7 @@ function openUbahStatus(requestId) {
         if (selectTerjadi) selectTerjadi.value = 'orang_lain';
         if (selectPenerima) selectPenerima.value = idPenerima;
     }
-    togglePenerimaGroup();
-
-    const selectTerjadiSiapa = document.getElementById('ubah-terjadi-siapa');
-    if (selectTerjadiSiapa) {
-        selectTerjadiSiapa.value = terjadiPada;
-    }
+    togglePenerimaGroup(); 
 
     const valStatus = (idStatus === 4) ? 'done' : 'on-repair';
     document.querySelector(`input[name="status"][value="${valStatus}"]`)?.click();
@@ -996,10 +1008,6 @@ function updateUrgencyAutomaticly() {
         badge.style.display = "none";
     }
 }
- 
-$(document).ready(function() {
-    $('#ubah-terjadi-siapa').on('change', updateUrgencyAutomatically);
-});
 
 // Add CSS animations
 const style = document.createElement('style');
