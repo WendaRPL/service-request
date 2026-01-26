@@ -364,7 +364,6 @@ ob_start();
                 </div> 
                 <div class="form-group" id="namaLainGroup" style="display: none; position: relative;">
                     <label for="user_search">Cari User (Nama):</label>
-                    
                     <input type="text" 
                         id="user_search" 
                         class="form-control" 
@@ -372,7 +371,6 @@ ob_start();
                         autocomplete="off" 
                         onkeyup="searchUser(this.value)"> 
                     <input type="hidden" name="user_penerima" id="user_penerima_id">
-                    
                     <div id="search_results" class="search-dropdown" style="display: none;"></div>
                 </div>
                 <div class="form-group radio-group type-kendala-group"> 
@@ -901,11 +899,9 @@ ob_start();
 <script>
     // Gunakan window agar benar-benar global
     window.dataKendala = <?php echo json_encode($data_kendala_db); ?>;
-    window.allUsersData = <?php echo json_encode($usersForSearch); ?>;
-    
-    // Debugging: Munculkan di console untuk cek apakah data PHP masuk
-    console.log("Data Kendala Load:", window.dataKendala);
+    window.allUsersData = <?php echo json_encode($usersForSearch); ?>; 
 </script>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
