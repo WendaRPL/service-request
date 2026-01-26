@@ -11,15 +11,6 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-.is-staff .dashboard-content {
-    margin-left: 180px;
-    transition: margin-left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.is-staff.sidebar-collapsed .dashboard-content {
-    margin-left: 30px;
-}
-
 /* Add User Button */
 .action-button.add-user {
     margin: 0 0 25px 20px;

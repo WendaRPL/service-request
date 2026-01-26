@@ -1,4 +1,6 @@
-/* CSS VARIABLES */
+/* ==========================================
+   1. CSS VARIABLES & RESET
+   ========================================== */
 :root {
     --first: #647AAD;
     --second: #7FA1C3;
@@ -17,155 +19,39 @@
     --transition: all 0.3s ease;
 }
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     background-color: var(--third);
-}
-
-/* =========================
-   HEADER
-========================= */
-.header {
-    background: linear-gradient(135deg, var(--first) 0%, var(--second) 100%);
-    color: var(--white);
-    padding: 15px 30px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 20px rgba(74, 92, 122, 0.2);
-    backdrop-filter: blur(10px);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1001;
-    overflow: hidden;
-}
-
-.header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, 
-        var(--first) 0%, 
-        var(--second) 20%, 
-        #8AA9D6 40%,
-        var(--second) 60%,
-        var(--first) 80%,
-        var(--second) 100%);
-    background-size: 200% 100%;
-    animation: wave 10s linear infinite;
-}
-
-@keyframes wave {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1400px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 2;
-}
-
-.system-title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-right: auto;
-    letter-spacing: -0.5px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    margin-right: 30px;
-    color: var(--white);
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    transition: var(--transition);
-    cursor: pointer;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.user-info:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.home-icon {
-    font-size: 1.2rem;
-    margin-right: 8px;
-    color: var(--white);
-}
-
-.home-text {
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    transition: var(--transition);
-    cursor: pointer;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.user-profile:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.username {
-    font-size: 1rem;
-    font-weight: 500;
-    margin-right: 10px;
-    color: var(--white);
-}
-
-.profile-icon {
-    font-size: 1.8rem;
-    color: var(--white);
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-gray);
+    overflow-x: hidden;
 }
 
 /* =========================
    CONTAINER - WITH SLIDE ANIMATION
 ========================= */
 .container {
-    padding-top: 80px;
-    min-height: 100vh;
-    margin-left: 10px;
-    margin-right: 30px;
+    padding-top: 60px;
+    min-height: 80vh;
     transition: margin-left 0.35s ease;
-}
-
-/* Default: NO PADDING LEFT untuk halaman non-staff */
-.container {
-    padding-left: 30px;
+    padding-left: 20px;
     padding-right: 30px;
+    overflow-y: auto;
 }
 
 /* Hanya untuk staff yang punya sidebar */
 .is-staff .container {
-    margin-left: 200px; /* sidebar 250 + gap */
+    margin-left: 210px; /* ini saat sidebar terbuka */
 }
 
 /* Ketika sidebar collapsed - smooth slide back */
 .is-staff.sidebar-collapsed .container {
-    margin-left: 30px;
+    margin-left: 20px; /* ini saat sidebar tertutup besti */
 }
 
 /* Animasi untuk content slide */
@@ -200,38 +86,15 @@ body {
 ========================= */
 .main-container {
     display: flex;
-    max-width: 1400px;
-    margin: 30px auto 0 auto;
-    gap: 30px;
+    max-width: fit-content;
+    margin: 0px auto 0px 10px;
+    gap: 20px;
     animation: fadeIn .8s ease;
 }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-/* =========================
-   SIDEBAR (Left Sidebar - User Side)
-========================= */
-.sidebar {
-    width: 300px;
-    flex-shrink: 0;
-}
-
-.sidebar-box {
-    background: var(--fourth);
-    padding: 25px;
-    margin-bottom: 25px;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-}
-
-.sidebar-box:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
 /* Card Footer */
@@ -249,31 +112,9 @@ body {
     letter-spacing: 0.3px;
 }
 
-/* =========================
-   RESPONSIVE (User Side)
-========================= */
-@media (max-width: 1024px) {
-    .main-container {
-        flex-direction: column;
-    }
-    
-    .sidebox {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-    
-    .sidebar-box {
-        flex: 1;
-        min-width: 250px;
-    }
-}
-
-/* =========================
-   STAFF IT SIDEBAR (Right Sidebar - Navigation)
-========================= */
-
+/* ==========================================
+   2. HEADER & NAVBAR (GLOBAL)
+   ========================================== */
 .navbar {
     height: 60px;
     background: linear-gradient(135deg, var(--first), var(--second));
@@ -295,13 +136,11 @@ body {
     gap: 12px;
 }
 
-.staff-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    background: rgba(255,255,255,0.15);
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    backdrop-filter: blur(5px);
+.system-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .menu-toggle {
@@ -311,18 +150,16 @@ body {
     border: none;
     color: var(--white);
     cursor: pointer;
-    padding: 4px 8px;
     border-radius: var(--radius-sm);
-    transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+    transition: var(--transition);
 }
 
 .menu-toggle:hover {
-    background: rgba(255,255,255,0.2);
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .navbar-right {
@@ -332,21 +169,204 @@ body {
     gap: 10px;
 }
 
-.logout-link {
-    color: var(--white);
-    font-size: 1.2rem;
-    transition: var(--transition);
+/* ==========================================
+   3. PROFILE NAV & DROPDOWN
+   ========================================== */
+.user-profile {
     display: flex;
     align-items: center;
-    padding: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
     border-radius: var(--radius-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.logout-link:hover {
-    color: #FFD6D6;
-    transform: scale(1.1);
-    background: rgba(255, 255, 255, 0.1);
+.user-profile:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
+
+.username {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-right: 10px;
+}
+
+.nav-profile-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid white;
+}
+
+.profile-icon {
+    font-size: 1.8rem;
+}
+
+.profile-dropdown {
+    position: relative;
+}
+
+.profile-menu {
+    position: absolute;
+    top: 120%;
+    right: 0;
+    min-width: 180px;
+    background: var(--white);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.profile-menu.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.profile-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: var(--dark-gray);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.profile-item:hover {
+    background: var(--third-light);
+    padding-left: 20px;
+}
+
+.profile-item.logout { color: var(--error); }
+
+/* ==========================================
+   4. MODAL PROFILE & AVATAR UPLOAD
+   ========================================== */
+.profile-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+.profile-overlay.active { opacity: 1; visibility: visible; }
+
+.profile-modal {
+    background: #f8f6f2;
+    border-radius: var(--radius-lg);
+    width: 95%;
+    max-width: 400px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    transform: translateY(30px);
+    transition: var(--transition);
+}
+
+.profile-overlay.active .profile-modal { transform: translateY(0); }
+
+.profile-header {
+    background: var(--first);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.profile-close-btn { cursor: pointer; font-size: 1.2rem; transition: var(--transition); }
+.profile-close-btn:hover { color: var(--error); transform: rotate(90deg); }
+
+.profile-body { padding: 30px 20px; text-align: center; }
+
+/* AVATAR LOGIC */
+.profile-avatar {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--fourth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border: 5px solid white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.profile-avatar i#profileIcon { font-size: 4.5rem; color: var(--first); }
+
+.profile-img-preview { width: 100%; height: 100%; object-fit: cover; }
+
+.avatar-edit-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    height: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: var(--transition);
+    transform: translateY(10px);
+}
+
+.profile-avatar:hover .avatar-edit-overlay { opacity: 1; transform: translateY(0); }
+
+.profile-info { margin-top: 15px; display: flex; flex-direction: column; gap: 12px; }
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    background: var(--fourth);
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.info-row .label { color: var(--medium-gray); font-weight: 500; }
+.info-row .value { color: var(--dark-gray); font-weight: 700; }
+
+.profile-footer { padding: 20px; border-top: 1px solid rgba(0,0,0,0.05); text-align: center; }
+
+.profile-logout-btn {
+    background: linear-gradient(135deg, var(--error), #C97A8D);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.profile-logout-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(173,100,127,0.4); }
 
 /* =========================
    SIDEBAR (Navigation Sidebar)
@@ -451,86 +471,14 @@ body {
     top: 60px; /* Offset untuk navbar staff */
 }
 
-
-/* =========================
-   RESPONSIVE (Navigation Sidebar)
-========================= */
+/* ==========================================
+   6. RESPONSIVE
+   ========================================== */
 @media (max-width: 768px) {
-    /* Di mobile, nonaktifkan animasi slide container */
-    .container,
-    .is-staff .container,
-    .is-staff.sidebar-collapsed .container {
-        padding-left: 20px !important;
-        padding-right: 20px !important;
-        animation: none !important;
-        transition: none !important;
-    }
-
-    .is-staff.sidebar-shift .container {
-        padding-left: 20px !important;
-    }
+    .is-staff .container { margin-left: 0; }
+    .sidebar { width: 280px; transform: translateX(-100%); }
+    .sidebar:not(.collapsed) { transform: translateX(0); }
     
-    .sidebar {
-        width: 85%;
-        max-width: 280px;
-        transform: translateX(-100%);
-    }
-
-    .sidebar:not(.collapsed) {
-        transform: translateX(0) !important;
-    }
-    
-    /* Main container adjustment for mobile */
-    .main-container {
-        margin: 20px auto;
-        gap: 20px;
-    }
-    
-    /* User info compact on mobile */
-    .user-info span:not(.home-icon),
-    .username {
-        display: none;
-    }
-    
-    .user-info, .user-profile {
-        padding: 8px 10px;
-    }
-    
-    /* Adjust padding untuk staff di mobile */
-    .is-staff .container {
-        padding-top: 120px !important;
-    }
-}
-
-/* Hide overlay on desktop */
-@media (min-width: 769px) {
-    .sidebar-overlay {
-        display: none !important;
-    }
-}
-
-/* Small mobile */
-@media (max-width: 480px) {
-    .header {
-        padding: 12px 15px;
-    }
-    
-    .system-title {
-        font-size: 1.3rem;
-    }
-    
-    .navbar {
-        padding: 0 15px;
-    }
-    
-    .staff-label {
-        font-size: 0.75rem;
-        padding: 3px 8px;
-    }
-    
-    .menu-toggle {
-        width: 32px;
-        height: 32px;
-        font-size: 1.2rem;
-    }
+    .username { display: none; }
+    .system-title { font-size: 1.1rem; }
 }
