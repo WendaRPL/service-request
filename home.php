@@ -35,16 +35,19 @@ $unratedRequests = $resUnrated->fetch_all(MYSQLI_ASSOC);
  * AMBIL DATA REQUEST (QUEUE)
  * ==========================
  */
-
 $sql = "
 SELECT 
     r.id,
     r.handling_by,
     IFNULL(r.tindakan_it, '') AS tindakan_it,        
     IFNULL(r.hasil_it, '') AS hasil_it,
-    IFNULL(r.ketidaksesuaian_detail, '') AS ketidaksesuaian_detail,
-    COALESCE(t.nama_toko, t_alt.nama_toko, '') AS nama_toko,
-    COALESCE(t.kode_toko, t_alt.kode_toko, '') AS kode_toko,
+    IFNULL(r.ketidaksesuaian_detail, '') AS ketidaksesuaian_detail, 
+    (SELECT GROUP_CONCAT(kode_toko SEPARATOR ', ') 
+     FROM master_toko 
+     WHERE FIND_IN_SET(master_toko.id, r.user_toko)) AS kode_toko_gabungan, 
+    (SELECT GROUP_CONCAT(nama_toko SEPARATOR ', ') 
+     FROM master_toko 
+     WHERE FIND_IN_SET(master_toko.id, r.user_toko)) AS nama_toko_gabungan, 
     IFNULL(u_req.username, 'No Peminta') AS peminta,
     u_req.id AS id_peminta,
     IFNULL(u_penerima.username, '') AS penerima,
@@ -61,20 +64,19 @@ SELECT
     IFNULL (r.upload, '') AS upload, 
     r.input_datetime
 FROM transaksi_request r
-LEFT JOIN master_toko t ON r.user_toko = t.id
+/* Hapus JOIN master_toko t karena sudah diganti subquery di atas */
 LEFT JOIN users u_req ON r.user_request = u_req.id
-LEFT JOIN master_toko t_alt ON u_req.toko_id = t_alt.id
 LEFT JOIN users u_penerima ON r.user_penerima = u_penerima.id
-LEFT JOIN users stf ON r.handling_by = stf.id AND stf.role = 1
+LEFT JOIN users stf ON r.handling_by = stf.id
 LEFT JOIN status s ON r.status = s.id
+WHERE r.status IN (1, 2, 3) 
 ORDER BY 
     CASE WHEN r.level_urgensi = 'High' THEN 1 ELSE 2 END,
     r.input_datetime DESC
 ";
 
 $result = $conn->query($sql);
-$requests = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
-// Ambil ID staff yang sedang login dari session
+$requests = $result ? $result->fetch_all(MYSQLI_ASSOC) : []; 
 $myId = $_SESSION['user_id'];
 
 $sqlUsers = "SELECT id, username FROM users WHERE role != 1 ORDER BY username ASC";
@@ -82,18 +84,15 @@ $resUsers = $conn->query($sqlUsers);
 $allUsers = $resUsers ? $resUsers->fetch_all(MYSQLI_ASSOC) : [];
 
 $usersForSearch = $allUsers;  
-
-// Query hanya ambil role Staff IT (role id = 1) dan bukan dirinya sendiri
+ 
 $sqlAllUsers = "SELECT id, username FROM users WHERE role != 1 ORDER BY username ASC";
 $resAllUsers = $conn->query($sqlAllUsers);
 $allUsers = $resAllUsers ? $resAllUsers->fetch_all(MYSQLI_ASSOC) : [];
 $myTokoId = $userData['toko_id'] ?? '';
-
-// Ambil data sesuai struktur tabel Anda (id, tipe_kendala, nama_kendala)
+ 
 $sql_master = "SELECT id, tipe_kendala, nama_kendala FROM master_jenis_kendala ORDER BY nama_kendala ASC";
 $result_master = mysqli_query($conn, $sql_master);
-
-// Ambil semua data toko untuk pilihan
+ 
 $sqlToko = "SELECT id, nama_toko, kode_toko FROM master_toko";
 $resToko = $conn->query($sqlToko);
 $allToko = [];
@@ -122,14 +121,13 @@ if ($result_master) {
 ob_start();
 ?>
 
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="dist/css/home.css">
 
 <!-- main content -->
-<div class="main-layout">
-    <!-- box card ajukan req, done & canceled, dan belum di rating (role user) -->
+<div class="main-layout"> 
     <div class="main-container">
         <aside class="sidebox">
             <?php if (can('input_request')): ?>
@@ -168,40 +166,38 @@ ob_start();
             
             <div class="action-dropdown-wrapper">
                 <button class="action-btn" id="actionDropdownBtn">Aksi ▼</button>  
-                <div class="action-dropdown-menu" id="actionDropdown">  
+                <div class="action-dropdown-menu" id="actionDropdown">
                     <div class="dropdown-item" data-action="accept">Accept</div>
-                    <div class="dropdown-item" data-action="change-urgency">Ganti Level Urgensi</div>
+                    <div class="dropdown-item" data-action="change-urgency">
+                        Ganti Level <br> Urgensi
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="queue-items-container">
             <?php foreach ($requests as $row): 
-                    if ((int)$row['id_status'] === 1): 
-                        // --- badge urgensi ---
+                    if ((int)$row['id_status'] === 1):  
                         $shCode = ucfirst($row['sh_code']);  
                         $urgensi = $row['level_urgensi'];    
                         $classUrgensi = strtolower($urgensi);  
-                        
-                        // Gabungkan menjadi format: Software <span class="urgency-badge high">High</span>
                         $badgeHTML = $shCode . ' <span class="urgency-badge ' . $classUrgensi . '">' . $urgensi . '</span>';
             ?>
                 <div class="queue-item">
-                    <input type="checkbox" id="user<?= $row['id'] ?>" value="<?= $row['id'] ?>">
-                    <label for="user<?= $row['id'] ?>">
-                        <span class="queue-name"><?= htmlspecialchars($row['peminta']) ?></span>
-                        <abbr class="queue-store"><?= htmlspecialchars($row['kode_toko']) ?></abbr>
-                        <span class="urgency-badge <?= strtolower($row['level_urgensi']) ?>">
-                            <?= htmlspecialchars($row['level_urgensi']) ?>
-                        </span>
-                        <div class="queue-datetime">
-                            <span class="date"><?= date('d/m/Y', strtotime($row['input_datetime'])) ?></span>
-                            <span class="time"><?= date('H:i', strtotime($row['input_datetime'])) ?></span>
-                        </div>
-                    </label>
+                    <div class="queue-checkbox">
+                        <input type="checkbox" value="<?= $row['id'] ?>" data-jenis="<?= htmlspecialchars($row['jenis_kendala']) ?>">
+                    </div>
+                    <span class="queue-name"><?= htmlspecialchars($row['peminta']) ?></span>  
+                    <span class="urgency-badge <?= strtolower($row['level_urgensi']) ?>">
+                        <?= htmlspecialchars($row['level_urgensi']) ?>
+                    </span>
+                    <div class="queue-datetime">
+                        <small class="date"><?= date('d/m/Y', strtotime($row['input_datetime'])) ?></small>
+                        <small class="time"><?= date('H:i', strtotime($row['input_datetime'])) ?></small>
+                    </div>
                     <button class="open-detail-btn" 
                         data-id="<?= $row['id'] ?>"
-                        data-toko="<?= htmlspecialchars($row['nama_toko']) ?>"
+                        data-toko="<?= htmlspecialchars($row['nama_toko_gabungan'] ?? '-') ?>"
                         data-peminta="<?= htmlspecialchars($row['peminta']) ?>"
                         data-penerima="<?= htmlspecialchars($row['penerima']) ?>"
                         data-sh='<?= $badgeHTML ?>'  
@@ -209,9 +205,10 @@ ob_start();
                         data-status="<?= htmlspecialchars($row['status_nama']) ?>"
                         data-staff="<?= htmlspecialchars($row['staff_name']) ?>"
                         data-desc="<?= htmlspecialchars($row['description']) ?>"
-                        data-kode-hw="<?= htmlspecialchars($row['kode_hardware']) ?>"
+                        data-kode-hardware="<?= htmlspecialchars($row['kode_hardware']) ?>"
                         data-terjadi="<?= htmlspecialchars($row['terjadi_pada']) ?>"
-                        data-upload="<?= htmlspecialchars($row['upload']) ?>" 
+                        data-upload="<?= htmlspecialchars($row['upload']) ?>"
+                        data-deskripsi="<?= htmlspecialchars($row['description']); ?>"
                         onclick="openQueueDetail(this)"> Open Details
                     </button>
                 </div>
@@ -247,23 +244,16 @@ ob_start();
                             <?php 
                                 $idStatus = (int)$row['id_status'];
                                 $handlerId = (int)$row['handling_by'];
-                                $myIdInt = (int)$myId;
-
-                                // 1. Cek apakah status sudah selesai (Done=4 atau Canceled=5)
-                                $isFinalStatus = ($idStatus === 4 || $idStatus === 5);
-
-                                // 2. Cek apakah tiket masih Open (1)
-                                $isOpen = ($idStatus === 1);
-
-                                // 3. Cek apakah ini tiket milik saya
-                                $isMyJob = ($handlerId === $myIdInt);
-
-                                if ($isFinalStatus) {
-                                    $disabledAttr = 'disabled';
-                                } elseif (!$isOpen && !$isMyJob) {
-                                    $disabledAttr = 'disabled';
+                                $myIdInt = (int)$myId; 
+                                $isFinalStatus = ($idStatus === 4 || $idStatus === 5); 
+                                $isOpen = ($idStatus === 1);  
+                                $isMyJob = ($handlerId === $myIdInt); 
+                                $isProcessOrPending = ($idStatus === 2 || $idStatus === 3);
+                                $isMyJob = ($handlerId === $myIdInt); 
+                                if ($isProcessOrPending && $isMyJob) {
+                                    $disabledAttr = '';  
                                 } else {
-                                    $disabledAttr = '';
+                                    $disabledAttr = 'disabled'; 
                                 }
                             ?>
                             <tr data-request-id="<?= $row['id'] ?>"
@@ -275,10 +265,11 @@ ob_start();
                                 data-deskripsi="<?= htmlspecialchars($row['description']) ?>"
                                 data-kode-hw="<?= htmlspecialchars($row['kode_hardware'] ?? '')?>"
                                 data-terjadi-pada="<?= htmlspecialchars($row['terjadi_pada'] ?? '') ?>"
+                                data-upload="<?= htmlspecialchars($row['upload']) ?>"
                                 data-ketidaksesuaian-it="<?= htmlspecialchars($row['ketidaksesuaian_detail'] ?? '') ?>">
                                 
                                 <td><?= $no++ ?>.</td>
-                                <td><?= htmlspecialchars($row['nama_toko']) ?></td>
+                                <td><?= htmlspecialchars($row['kode_toko_gabungan'] ?: '-') ?></td>
                                 <td><?= htmlspecialchars($row['peminta']) ?></td>
                                 <td><?= htmlspecialchars($row['penerima']) ?></td>
                                 <td class="urgency-cell">
@@ -301,22 +292,22 @@ ob_start();
                                         onclick="event.stopPropagation(); openDetailRequest(<?= $row['id'] ?>)">Open Details
                                     </button>
 
-                                    <?php if ($row['id_peminta'] == $_SESSION['user_id'] && $row['id_status'] == 1): ?>
-                                            <button class="btn-reject" onclick="event.stopPropagation(); cancelRequest(<?= $row['id'] ?>)">
-                                                Cancel Request
-                                            </button>
-                                        <?php endif; ?>
+                                   <?php if ($row['id_peminta'] == $_SESSION['user_id'] && in_array($row['id_status'], [1, 2, 3])): ?>
+                                        <button class="btn-reject" onclick="event.stopPropagation(); cancelRequest(<?= $row['id'] ?>)">
+                                            Cancel Request
+                                        </button>
+                                    <?php endif; ?>
 
                                     <?php if(can('handling_request')): ?>
-                                    <button class="btn-transfer" 
-                                        onclick="event.stopPropagation(); openTransferHandler(<?= $row['id'] ?>)" 
-                                        <?= $disabledAttr ?>>Transfer Handler
-                                    </button>
+                                        <button class="btn-transfer" 
+                                            onclick="event.stopPropagation(); openTransferHandler(<?= $row['id'] ?>)" 
+                                            <?= $disabledAttr ?>>Transfer Handler
+                                        </button>
 
-                                    <button class="btn-status" 
-                                        onclick="event.stopPropagation(); openUbahStatus(<?= $row['id'] ?>)" 
-                                        <?= $disabledAttr ?>>Ubah Status
-                                    </button>
+                                        <button class="btn-status" 
+                                            onclick="event.stopPropagation(); openUbahStatus(<?= $row['id'] ?>)" 
+                                            <?= $disabledAttr ?>>Ubah Status
+                                        </button>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -379,8 +370,7 @@ ob_start();
                         class="form-control" 
                         placeholder="Ketik nama user..." 
                         autocomplete="off" 
-                        onkeyup="searchUser(this.value)">
-                    
+                        onkeyup="searchUser(this.value)"> 
                     <input type="hidden" name="user_penerima" id="user_penerima_id">
                     
                     <div id="search_results" class="search-dropdown" style="display: none;"></div>
@@ -408,29 +398,25 @@ ob_start();
             <div class="form-column"> 
                 <div class="form-group"> 
                     <label for="terjadi_di">Terjadi pada siapa saja:</label> 
-                    <select id="terjadi_di" required> 
-                        <option value="">-- Pilih --</option> 
-                        <option value="semua">Semua Orang</option> 
-                        <option value="beberapa">Beberapa Orang</option> 
-                        <option value="satu">Satu Orang Saja</option> 
+                    <select id="terjadi_di" name="terjadi_pada" onchange="updateUrgencyAutomaticly()" required> 
+                        <option value="">-- Pilih Dampak --</option> 
+                        <option value="Semua Orang/Toko">Semua Orang/Toko</option> 
+                        <option value="Beberapa Orang">Beberapa Orang</option> 
+                        <option value="Diri Sendiri">Hanya Diri Sendiri</option>
+                        <option value="Masih Dapat Bekerja Dengan Cara Lain">Masih dapat bekerja dengan cara lain</option>
                     </select> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="deskripsi">Deskripsi Kendala: (Opsional)</label>
-                    <textarea id="deskripsi" placeholder="Jelaskan kendala secara detail.."></textarea> 
                 </div>
                 <div class="form-group"> 
-                    <label>Add Lampiran (Foto/Dokumen):</label> 
-                    <div class="upload-box" onclick="triggerFileUpload()"> 
-                        <i class="fas fa-paperclip"></i> <input type="file" id="fileUpload" style="display: none;" 
-                            accept="image/*, .pdf, .doc, .docx, .xls, .xlsx" 
-                            onchange="handleFileSelect(event)"> 
-                        <span id="fileName">Masukkan File Lampiran</span> 
-                    </div> 
+                    <label for="deskripsi">Deskripsi Kendala:</label>
+                    <textarea id="deskripsi" placeholder="Jelaskan kendala secara detail.." required></textarea> 
+                </div>
+                <div class="form-group">
+                    <label>Upload Dokumen (Gambar, PDF, Excel, dll):</label>
+                    <input type="file" name="upload_file" id="upload_file" class="form-control">
                 </div>
                 <div class="form-group urgency-info"> 
                     <label>Level Urgensi:</label> 
-                    <p>*Level urgensi ditentukan otomatis berdasarkan berapa banyak yang terdampak kendala</p> 
+                    <p>*Level urgensi ditentukan otomatis by sistem</p> 
                 </div> 
             </div> 
             </div> 
@@ -485,7 +471,7 @@ ob_start();
                                 <th>Toko</th>
                                 <th>Peminta</th>
                                 <th>Penerima</th>
-                                <th>S/H</th>
+                                <th>Tipe Kendala (Urgensi)</th>
                                 <th>Jenis Kendala</th>
                             </tr>
                         </thead>
@@ -512,31 +498,28 @@ ob_start();
     </div>
 </div>
 
-<!-- MODAL 1: DETAIL REQUEST -->
+<!-- MODAL DETAIL REQUEST -->
 <div id="requestDetailModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" data-modal="requestDetailModal">&times;</span>
         <div class="modal-detail">
             <div class="modal-header">
-                <h2>Detail Permintaan Layanan</h2>
+                <h2>Detail Request</h2>
             </div>
             
             <div class="modal-body">
                 <!-- Grid 2 kolom untuk field -->
-                <div class="field-grid">
-                    <!-- Kolom 1 -->
+                <div class="field-grid"> 
                     <div class="field-item">
                         <div class="field-label">No. Request</div>
                         <div class="field-value" id="detail-no" readonly>...</div>
                     </div>
-                    
-                    <!-- Kolom 2 -->
+                     
                     <div class="field-item">
                         <div class="field-label">Toko</div>
                         <div class="field-value" id="detail-toko" readonly>...</div>
                     </div>
-
-                    <!-- Kolom 3 -->
+ 
                     <div class="field-item">
                         <div class="field-label">Peminta</div>
                         <div class="field-value" id="detail-penerima" readonly>...</div>
@@ -547,62 +530,52 @@ ob_start();
                         <div class="field-label">Penerima</div>
                         <div class="field-value" id="detail-peminta" readonly>...</div>
                     </div>
-
-                    <!-- Kolom -->
+ 
                     <div class="field-item">
                         <div class="field-label">Terjadi Pada Siapa Saja</div>
                         <div class="field-value" id="detail-terjadi" readonly>...</div>
                     </div>
-                    
-                    <!-- Kolom 5 -->
-                    <div class="field-item">
-                        <div class="field-label">Handling by</div>
-                        <div class="field-value" id="detail-staff" readonly>...</div>
-                    </div>
-                    
-                    <!-- Kolom 6 -->
-                    <div class="field-item">
-                        <div class="field-label">Jenis Kendala</div>
-                        <div class="field-value" id="detail-jenis" readonly>...</div>
-                    </div>
-                    
-                    <!-- Kolom 7 -->
+ 
                     <div class="field-item">
                         <div class="field-label">Tipe Kendala (Urgensi)</div>
                         <div class="field-value" id="detail-sh" readonly>...</div>
                     </div>
-                    
-                    <!-- Kolom 8 -->
+ 
                     <div class="field-item">
-                        <div class="field-label">Status</div>
-                        <div class="field-value" id="detail-status" readonly>...</div>
+                        <div class="field-label">Jenis Kendala</div>
+                        <div class="field-value" id="detail-jenis" readonly>...</div>
                     </div>
-                    
-                    <!-- Kolom   -->
+ 
                     <div class="field-item">
                         <div class="field-label">Kode Hardware</div>
                         <div class="field-value" id="detail-kode-hw" readonly>...</div>
                     </div>
-                    
-                    <!-- Field full width untuk deskripsi -->
+                     
+                    <div class="field-item">
+                        <div class="field-label">Status</div>
+                        <div class="field-value" id="detail-status" readonly>...</div>
+                    </div>
+ 
+                    <div class="field-item">
+                        <div class="field-label">Handling by</div>
+                        <div class="field-value" id="detail-staff" readonly>...</div>
+                    </div>
+                     
                     <div class="field-item full-width-field">
                         <div class="field-label">Deskripsi Kendala</div>
                         <textarea id="detail-deskripsi" class="field-value textarea-value" readonly style="resize: vertical;"></textarea>
+                    </div> 
+                     
+                    <div class="field-item full-width-field" class="detail-item">
+                        <label class="field-label">Lampiran / Dokumen:</label>
+                        <div class="field-value" id="detail-upload-display">
                     </div>
-                    
-                    <!-- Field full width untuk foto -->
-                    <div class="field-item full-width-field">
-                        <div class="field-label">Lampiran</div>
-                        <div class="field-value">
-                            <div id="attachment-container">
-                                </div>
-                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="modal-actions" id="detailModalActions">
-                <button id="btnAcceptFromModal" class="btn-lanjut">Accept</button>
+                <button id="btnAcceptFromModal" class="btn-accept">Accept</button>
             </div>
 
         </div>
@@ -695,7 +668,7 @@ ob_start();
             </div>
 
             <div class="modal-actions">
-                <button class="btn-lanjut" id="btn-submit-transfer">Submit</button>
+                <button class="btn-accept" id="btn-submit-transfer">Submit</button>
             </div>
         </div>
     </div>
@@ -729,12 +702,12 @@ ob_start();
                         <div class="field-value" id="ubah-status-peminta-val" readonly>...</div>
                     </div>
                     <div class="field-item">
-                        <div class="field-label">Terjadi Pada Siapa Saja</div>
-                        <div class="field-value" id="ubah-status-terjadi-val" readonly>...</div>
-                    </div>
-                    <div class="field-item">
                         <div class="field-label">Penerima</div>
                         <div class="field-value" id="ubah-status-penerima-val" readonly>...</div>
+                    </div>
+                    <div class="field-item">
+                        <div class="field-label">Terjadi Pada Siapa Saja</div>
+                        <div class="field-value" id="ubah-status-terjadi-val" readonly>...</div>
                     </div>
                     <div class="field-item">
                         <div class="field-label">Jenis Kendala</div>
@@ -756,40 +729,36 @@ ob_start();
                 
                 <!-- input sebelumnya -->
                 <div class="section-divide">Form Input Ubah Status <span style="color: #eb2700ff;">(Dapat Diisi)</span></div>
-
-                <!-- Grid 2 kolom -->
-                <div class="status-form-grid">
-                    <!-- Kolom Kiri -->
-                    <div class="form-column">
-                        <!-- Tindakan yang dilakukan -->
+ 
+                <div class="status-form-grid"> 
+                    <div class="form-column"> 
                         <div class="form-group">
                             <label class="form-label">Tindakan yang dilakukan: (Action)</label>
                             <input type="text" class="form-input" id="ubah-status-tindakan" 
                                 placeholder="Masukkan tindakan yang dilakukan...">
                         </div>
-                        
-                        <!-- Hasil akhirnya -->
+                         
                         <div class="form-group">
                             <label class="form-label">Hasil akhirnya: (Result)</label>
                             <textarea class="form-textarea" id="ubah-status-hasil" 
                                     placeholder="Deskripsikan hasil akhir tindakan..."></textarea>
                         </div>
-
-                        <!-- Edit Tipe Kendala -->
+ 
                         <div class="form-group">
-                            <label class="form-label">Edit Tipe Kendala:</label>
-                            <select class="form-select" id="ubah-status-tipe" onchange="updateJenisDropdown(this.value)">
-                                <option value="software">Software</option> 
-                                <option value="hardware">Hardware</option>
+                            <label class="form-label">
+                                Edit Tipe Kendala: 
+                            </label>
+                            <select class="form-select" id="ubah-status-tipe">
+                                <option value="Hardware">Hardware</option>
+                                <option value="Software">Software</option>
                             </select>
+                            <input type="hidden" id="ubah-status-urgensi-input" name="level_urgensi">
                         </div>
-                        
-                        <!-- Edit Jenis Kendala -->
-                        <div class="form-group">
+
+                        <div class="form-group" id="">
                             <label class="form-label">Edit Jenis Kendala:</label>
                             <select class="form-select" id="ubah-status-jenis"></select>
-                        </div>
-                        <!-- kode hardware -->
+                        </div> 
                         <div class="form-group" id="group-kode-hardware" style="display: none;">
                             <label class="form-label">Kode Hardware:</label>
                             <input type="text" class="form-input" id="ubah-status-kode-hw" placeholder="Masukkan Kode (Contoh: PRN-01)">
@@ -804,9 +773,7 @@ ob_start();
                                 <option value="diri_sendiri">Diri Sendiri</option>
                                 <option value="orang_lain">Orang Lain</option>
                             </select>
-                        </div>
-
-                        <!-- ubah penerima -->
+                        </div> 
                         <div class="form-group" id="group-penerima-baru" style="display: none;">
                             <label class="form-label">Nama Penerima Service:</label>
                             <select class="form-select" id="ubah-status-penerima">
@@ -814,28 +781,19 @@ ob_start();
                                     <option value="<?= $u['id'] ?>"><?= htmlspecialchars($u['username']) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                        </div>
-
-                        <!-- edit terjadi pada siapa saja -->
+                        </div> 
                         <div class="form-group">
-                            <label class="form-label">Dampak Kendala (Terjadi Pada):</label>
+                            <label class="form-label">Dampak Kendala (Terjadi Pada): 
+                                <span id="ubah-status-urgensi-badge" class="badge-urgensi"></span>
+                            </label>
                             <select class="form-select" id="ubah-terjadi-siapa" onchange="updateUrgencyAutomaticly()">
                                 <option value="">-- Pilih Dampak --</option> 
-                                <option value="semua">Semua Orang/Toko</option> 
-                                <option value="beberapa">Beberapa Orang</option> 
-                                <option value="satu">Hanya Diri Sendiri</option>
-                                <option value="opsi_lain">Masih dapat bekerja dengan cara lain</option>
+                                <option value="Semua Orang/Toko">Semua Orang/Toko</option> 
+                                <option value="Beberapa Orang">Beberapa Orang</option> 
+                                <option value="Diri Sendiri">Hanya Diri Sendiri</option>
+                                <option value="Masih Dapat Bekerja Dengan Cara Lain">Masih dapat bekerja dengan cara lain</option>
                             </select>
                         </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Level Urgensi (Otomatis):</label>
-                            <input type="text" id="tampilan-urgensi" class="form-control" readonly 
-                                style="background-color: #e9ecef; font-weight: bold;" placeholder="Pilih dampak dahulu...">
-                            <input type="hidden" id="ubah-urgensi" name="level_urgensi">
-                        </div>
-
-                        <!-- Ubah Status -->
                         <div class="form-group">
                             <label class="form-label">Ubah Status:</label>
                             <div class="radio-group">
@@ -851,8 +809,7 @@ ob_start();
                                 </label>
                             </div>
                         </div>
-                        
-                        <!-- Ketidaksesuaian laporan -->
+                         
                         <div class="form-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="ubah-status-ketidaksesuaian">
@@ -868,7 +825,7 @@ ob_start();
             </div>
 
             <div class="modal-actions">
-                <button class="btn-lanjut" id="btn-submit-status">Lanjut</button>
+                <button class="btn-accept" id="btn-submit-status">Lanjut</button>
             </div>
         </div>
     </div>
@@ -935,25 +892,27 @@ ob_start();
             </div>
 
             <div class="modal-actions">
-                <button class="btn-submit" id="btn-final-submit" disabled>Submit</button>
+                <button class="btn-accept" id="btn-final-submit" disabled>Submit</button>
             </div>
         </div>
     </div>
 </div>
-
+ 
 <script>
-    // Memindahkan data dari PHP ke variabel Global JS
-    const dataKendala = <?php echo json_encode($data_kendala_db); ?>;
-    const allUsersData = <?php echo json_encode($usersForSearch); ?>;
+    // Gunakan window agar benar-benar global
+    window.dataKendala = <?php echo json_encode($data_kendala_db); ?>;
+    window.allUsersData = <?php echo json_encode($usersForSearch); ?>;
+    
+    // Debugging: Munculkan di console untuk cek apakah data PHP masuk
+    console.log("Data Kendala Load:", window.dataKendala);
 </script>
-
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     const unratedRequestsData = <?= json_encode($unratedRequests); ?>;
-</script>
+</script> 
 <script src="dist/js/home.js"></script>
 
 <?php
